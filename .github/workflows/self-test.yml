@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: Check out code
+        uses: actions/checkout@v2
+
 
       - name: Setup gcloud CLI
         uses: google-github-actions/setup-gcloud@master
@@ -26,9 +29,6 @@ jobs:
         with:
           cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
           location: ${{ secrets.GKE_CLUSTER_LOCATION }}
-
-      - name: Check out code
-        uses: actions/checkout@v2
 
       - name: Run this action
         uses: ./
