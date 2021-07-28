@@ -7633,6 +7633,8 @@ async function run() {
     }
 }
 async function envCheck() {
+    await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl version');
+    await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl config get-contexts');
     // Check that kubectl is available
     // check that it can talk to the cluster?
     // try to provide helpful messages if not in a usable state

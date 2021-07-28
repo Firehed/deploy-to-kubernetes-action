@@ -24,6 +24,8 @@ async function run(): Promise<void> {
 }
 
 async function envCheck(): Promise<void> {
+  await exec.exec('kubectl version')
+  await exec.exec('kubectl config get-contexts')
   // Check that kubectl is available
   // check that it can talk to the cluster?
   // try to provide helpful messages if not in a usable state
