@@ -35,7 +35,7 @@ async function pre(): Promise<number> {
 
   const params = {
     ref: github.context.ref,
-    environment: '',
+    environment: 'production',
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
   }

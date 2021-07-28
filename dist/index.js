@@ -7642,7 +7642,7 @@ async function pre() {
     const ok = _actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit(token);
     const params = {
         ref: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref,
-        environment: '',
+        environment: 'production',
         owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
         repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
     };
