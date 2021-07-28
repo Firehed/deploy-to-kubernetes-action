@@ -7667,6 +7667,8 @@ async function createDeployment() {
         environment: 'production',
         owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
         repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
+        auto_merge: false,
+        required_contents: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
     };
     const deploy = await ok.rest.repos.createDeployment(params);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(JSON.stringify(deploy));
