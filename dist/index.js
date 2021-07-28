@@ -7561,6 +7561,35 @@ module.exports = require("zlib");
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__nccwpck_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__nccwpck_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -7581,187 +7610,190 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
 "use strict";
-// ESM COMPAT FLAG
 __nccwpck_require__.r(__webpack_exports__);
-
-// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(2186);
-// EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
-var exec = __nccwpck_require__(1514);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __nccwpck_require__(5438);
-;// CONCATENATED MODULE: ./src/helpers.ts
-
-
-// Returns a string like "refs_pull_1_merge-bk1"
-function getTagForRun() {
-    var _a;
-    const usingBuildkit = process.env.DOCKER_BUILDKIT === '1';
-    const tagFriendlyRef = (_a = process.env.GITHUB_REF) === null || _a === void 0 ? void 0 : _a.replace(/\//g, '_');
-    return `${tagFriendlyRef}-bk${usingBuildkit ? '1' : '0'}`;
-}
-function isDefaultBranch() {
-    var _a;
-    const defaultBranch = (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.default_branch;
-    return github.context.payload.ref === `refs/heads/${defaultBranch}`;
-}
-const pullRequestEvents = [
-    'pull_request',
-    'pull_request_review',
-    'pull_request_review_comment',
-];
-function getFullCommitHash() {
-    // Github runs actions triggered by PRs on a merge commit. This populates
-    // GITHUB_SHA and related fields with the merge commit hash, rather than the
-    // hash of the commit that triggered the PR.
-    //
-    // For many situations, that results in very confusing mismatches, especially
-    // when trying to use commit hashes for build targets
-    if (pullRequestEvents.includes(github.context.eventName)) {
-        const prEvent = github.context.payload.pull_request;
-        return prEvent.head.sha;
-    }
-    return github.context.sha;
-}
-function getBaseStages() {
-    return core.getInput('stages').split(',').map(stage => stage.trim());
-}
-function getAllStages() {
-    return [
-        ...getBaseStages(),
-        core.getInput('testenv-stage').trim(),
-        core.getInput('testenv-stage').trim(),
-    ];
-}
-
-;// CONCATENATED MODULE: ./src/index.ts
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(1514);
+/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_exec__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
 
 
 
 async function run() {
     try {
-        await build();
+        await envCheck();
+        // @ts-ignore
+        const deploymentId = await pre();
+        await deploy();
+        await post();
     }
     catch (error) {
-        core.setFailed(error.message);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
     }
 }
-async function build() {
-    const stages = getBaseStages();
-    for (const stage of stages) {
-        await buildStage(stage);
-    }
-    // TODO: refactor these, possibly parallelize
-    const testStage = core.getInput('testenv-stage').trim();
-    if (testStage === '') {
-        core.info('testenv-stage not set; skipping build');
-    }
-    else {
-        const testTagBranch = await buildStage(testStage);
-        const testTag = await tagCommit(testTagBranch);
-        await dockerPush(testTag);
-        core.setOutput('testenv-tag', testTag);
-    }
-    const serverStage = core.getInput('server-stage').trim();
-    const serverTagBranch = await buildStage(serverStage);
-    const serverTag = await tagCommit(serverTagBranch);
-    await dockerPush(serverTag);
-    core.setOutput('commit', getFullCommitHash());
-    core.setOutput('server-tag', serverTag);
+async function envCheck() {
+    // Check that kubectl is available
+    // check that it can talk to the cluster?
+    // try to provide helpful messages if not in a usable state
 }
-async function buildStage(stage) {
-    core.info(`Building stage ${stage}`);
-    const repo = core.getInput('repository');
-    const quiet = core.getInput('quiet') ? '--quiet' : '';
-    const name = `${repo}/${stage}`;
-    const tagForRun = getTagForRun();
-    const tagsToTry = [tagForRun, 'latest'];
-    // let cacheImage = ''
-    for (const tag of tagsToTry) {
-        const image = `${name}:${tag}`;
-        core.debug(`Pulling ${image}`);
-        try {
-            await exec.exec('docker', [
-                'pull',
-                quiet,
-                image,
-            ]);
-            // cacheImage = image
-            // Don't pull fallback tags if pull succeeds
-            break;
-        }
-        catch (error) {
-            // Initial pull failing is OK
-            core.info(`Docker pull ${image} failed`);
-        }
-    }
-    const dockerfile = core.getInput('dockerfile');
-    core.debug(`Building ${stage}`);
-    const targetTag = `${name}:${tagForRun}`;
-    const cacheFrom = Array.from(getAllPossibleCacheTargets())
-        .flatMap(target => ['--cache-from', target]);
-    const result = await exec.exec('docker', [
-        'build',
-        // quiet,
-        // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
-        // '--cache-from', cacheImage ? cacheImage : '""',
-        ...cacheFrom,
-        '--file', dockerfile,
-        '--tag', targetTag,
-        '--target', stage,
-        '.'
-    ]);
-    if (result > 0) {
-        throw 'Docker build failed';
-    }
-    dockerPush(targetTag);
-    if (isDefaultBranch()) {
-        core.info("TODO: docker tag targetTag name:latest");
-        core.info("TODO: docker push name:latest");
-    }
-    return targetTag;
+async function pre() {
+    const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
+    const ok = _actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit(token);
+    const params = {
+        ref: '',
+        environment: '',
+        owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
+        repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
+    };
+    const deploy = await ok.rest.repos.createDeployment(params);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(JSON.stringify(deploy));
+    // @ts-ignore
+    const deploymentId = deploy.data.id;
+    const statusParams = {
+        owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
+        repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
+        deployment_id: deploymentId,
+        state: 'pending',
+    };
+    const status = await ok.rest.repos.createDeploymentStatus(statusParams);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(JSON.stringify(status));
+    return deploymentId;
 }
-async function dockerPush(tag) {
-    core.debug(`Pushing ${tag}`);
-    const quiet = core.getInput('quiet') ? '--quiet' : '';
-    const pushResult = await exec.exec('docker', [
-        'push',
-        quiet,
-        tag,
-    ]);
-    if (pushResult > 0) {
-        throw 'Docker push failed';
+async function deploy() {
+    const args = [
+        'set',
+        'image',
+        'deployment',
+    ];
+    const namespace = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('namespace');
+    if (namespace !== '') {
+        args.push(`--namespace=${namespace}`);
     }
+    const deployment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('deployment');
+    args.push(deployment);
+    const container = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('container');
+    const image = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('image');
+    args.push(`${container}=${image}`);
+    args.push('--record=true');
+    await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl', args);
 }
-async function tagCommit(maybeTaggedImage) {
-    const hash = getFullCommitHash();
-    core.info(`Commit hash: ${hash}`);
-    // Don't use a simple ":" split since registries can specify port
-    const segments = maybeTaggedImage.split('/');
-    const lastImageSegment = segments.pop();
-    if (lastImageSegment.includes(':')) {
-        const segmentWithoutTag = lastImageSegment.substring(0, lastImageSegment.indexOf(':'));
-        segments.push(`${segmentWithoutTag}:${hash}`);
-    }
-    else {
-        segments.push(`${lastImageSegment}:${hash}`);
-    }
-    const commitTag = segments.join('/');
-    await exec.exec('docker', [
-        'tag',
-        maybeTaggedImage,
-        commitTag,
-    ]);
-    return commitTag;
+async function post() {
+    // watch and wait?
 }
-function getAllPossibleCacheTargets() {
-    const tags = [getTagForRun(), 'latest'];
-    const stages = getAllStages();
-    const repo = core.getInput('repository');
-    const out = stages.map(stage => `${repo}/${stage}`)
-        .flatMap(image => tags.map(tag => `${image}:${tag}`));
-    return new Set(out);
-}
+// async function build(): Promise<void> {
+//   const stages = getBaseStages()
+//   for (const stage of stages) {
+//     await buildStage(stage)
+//   }
+//   // TODO: refactor these, possibly parallelize
+//   const testStage = core.getInput('testenv-stage').trim()
+//   if (testStage === '') {
+//     core.info('testenv-stage not set; skipping build')
+//   } else {
+//     const testTagBranch = await buildStage(testStage)
+//     const testTag = await tagCommit(testTagBranch)
+//     await dockerPush(testTag)
+//     core.setOutput('testenv-tag', testTag)
+//   }
+//   const serverStage = core.getInput('server-stage').trim()
+//   const serverTagBranch = await buildStage(serverStage)
+//   const serverTag = await tagCommit(serverTagBranch)
+//   await dockerPush(serverTag)
+//   core.setOutput('commit', getFullCommitHash())
+//   core.setOutput('server-tag', serverTag)
+// }
+// async function buildStage(stage: string): Promise<string> {
+//   core.info(`Building stage ${stage}`)
+//   const repo = core.getInput('repository')
+//   const quiet = core.getInput('quiet') ? '--quiet' : ''
+//   const name = `${repo}/${stage}`
+//   const tagForRun = getTagForRun()
+//   const tagsToTry = [tagForRun, 'latest']
+//   // let cacheImage = ''
+//   for (const tag of tagsToTry) {
+//     const image = `${name}:${tag}`
+//     core.debug(`Pulling ${image}`)
+//     try {
+//       await exec.exec('docker', [
+//         'pull',
+//         quiet,
+//         image,
+//       ])
+//       // cacheImage = image
+//       // Don't pull fallback tags if pull succeeds
+//       break
+//     } catch (error) {
+//       // Initial pull failing is OK
+//       core.info(`Docker pull ${image} failed`)
+//     }
+//   }
+//   const dockerfile = core.getInput('dockerfile')
+//   core.debug(`Building ${stage}`)
+//   const targetTag = `${name}:${tagForRun}`
+//   const cacheFrom = Array.from(getAllPossibleCacheTargets())
+//     .flatMap(target => ['--cache-from', target])
+//   const result = await exec.exec('docker', [
+//     'build',
+//     // quiet,
+//     // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
+//     // '--cache-from', cacheImage ? cacheImage : '""',
+//     ...cacheFrom,
+//     '--file', dockerfile,
+//     '--tag', targetTag,
+//     '--target', stage,
+//     '.'
+//   ])
+//   if (result > 0) {
+//     throw 'Docker build failed'
+//   }
+//   dockerPush(targetTag)
+//   if (isDefaultBranch()) {
+//     core.info("TODO: docker tag targetTag name:latest")
+//     core.info("TODO: docker push name:latest")
+//   }
+//   return targetTag
+// }
+// async function dockerPush(tag: string): Promise<void> {
+//   core.debug(`Pushing ${tag}`)
+//   const quiet = core.getInput('quiet') ? '--quiet' : ''
+//   const pushResult = await exec.exec('docker', [
+//     'push',
+//     quiet,
+//     tag,
+//   ])
+//   if (pushResult > 0) {
+//     throw 'Docker push failed'
+//   }
+// }
+// async function tagCommit(maybeTaggedImage: string): Promise<string> {
+//   const hash = getFullCommitHash()
+//   core.info(`Commit hash: ${hash}`)
+//   // Don't use a simple ":" split since registries can specify port
+//   const segments = maybeTaggedImage.split('/')
+//   const lastImageSegment = segments.pop()
+//   if (lastImageSegment!.includes(':')) {
+//     const segmentWithoutTag = lastImageSegment!.substring(0, lastImageSegment!.indexOf(':'))
+//     segments.push(`${segmentWithoutTag}:${hash}`)
+//   } else {
+//     segments.push(`${lastImageSegment}:${hash}`)
+//   }
+//   const commitTag = segments.join('/')
+//   await exec.exec('docker', [
+//     'tag',
+//     maybeTaggedImage,
+//     commitTag,
+//   ])
+//   return commitTag
+// }
+// function getAllPossibleCacheTargets(): Set<string> {
+//   const tags = [getTagForRun(), 'latest']
+//   const stages = getAllStages()
+//   const repo = core.getInput('repository')
+//   const out = stages.map(stage => `${repo}/${stage}`)
+//     .flatMap(image => tags.map(tag => `${image}:${tag}`))
+//   return new Set(out)
+// }
 run();
 
 })();
