@@ -7,8 +7,8 @@ on:
   pull_request:
 
 jobs:
-  build:
-    name: Build docker images
+  self-test:
+    name: Self-test
     runs-on: ubuntu-latest
     steps:
 

@@ -1,4 +1,4 @@
-name: Multi-stage Docker Build
+name: Deploy to Kubernetes
 
 author: Eric Stern
 
@@ -16,8 +16,6 @@ inputs:
   token:
     required: true
 
-  # kubectl set image deploy --namespace {namespace} {deployment}
-  # {container}={image} --record=true
 
   # dockerfile:
   #   description: Path to Dockerfile
@@ -40,7 +38,7 @@ inputs:
   #   default: true
   #   description: Send `--quiet` flag to docker commands
 
-outputs:
+# outputs:
   # commit:
   #   description: The full commit hash used for tags
   # server-tag:
