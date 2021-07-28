@@ -25,9 +25,23 @@ async function run(): Promise<void> {
   }
 }
 
+function getRef(): string {
+  const pullRequestEvents = [
+    'pull_request',
+    'pull_request_review',
+    'pull_request_review_comment',
+  ]
+  if (pullRequestEvents.includes(github.context.eventName)) {
+    const prEvent = github.context.payload.pull_request as unknown as any
+    return prEvent.head.sha
+  }
+  return github.context.sha
+}
+
 async function envCheck(): Promise<void> {
   core.debug(JSON.stringify(process.env))
   // Check that kubectl is available
+  // check that KUBECONFIG var is set and path exists
   await exec.exec('kubectl version')
   await exec.exec('kubectl config get-contexts')
   // check that it can talk to the cluster?
@@ -38,9 +52,13 @@ async function createDeployment(): Promise<number> {
   const token = core.getInput('token')
   const ok = github.getOctokit(token)
 
+  let ref = core.getInput('ref')
+  if (ref === '') {
+    ref = getRef()
+  }
+
   const params = {
-    // FIXME: this is wrong, probably normal sha thing
-    ref: github.context.ref,
+    ref,
     environment: 'production',
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,

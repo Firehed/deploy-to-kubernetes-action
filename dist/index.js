@@ -7634,9 +7634,22 @@ async function run() {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
     }
 }
+function getRef() {
+    const pullRequestEvents = [
+        'pull_request',
+        'pull_request_review',
+        'pull_request_review_comment',
+    ];
+    if (pullRequestEvents.includes(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.eventName)) {
+        const prEvent = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.payload.pull_request;
+        return prEvent.head.sha;
+    }
+    return _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.sha;
+}
 async function envCheck() {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(JSON.stringify(process.env));
     // Check that kubectl is available
+    // check that KUBECONFIG var is set and path exists
     await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl version');
     await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl config get-contexts');
     // check that it can talk to the cluster?
@@ -7645,9 +7658,12 @@ async function envCheck() {
 async function createDeployment() {
     const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
     const ok = _actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit(token);
+    let ref = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('ref');
+    if (ref === '') {
+        ref = getRef();
+    }
     const params = {
-        // FIXME: this is wrong, probably normal sha thing
-        ref: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref,
+        ref,
         environment: 'production',
         owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
         repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
