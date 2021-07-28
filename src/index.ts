@@ -34,7 +34,7 @@ async function pre(): Promise<number> {
   const ok = github.getOctokit(token)
 
   const params = {
-    ref: '',
+    ref: github.context.ref,
     environment: '',
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
