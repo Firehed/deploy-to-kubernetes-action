@@ -7633,6 +7633,7 @@ async function run() {
     }
 }
 async function envCheck() {
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(JSON.stringify(process.env));
     await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl version');
     await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl config get-contexts');
     // Check that kubectl is available
@@ -7643,6 +7644,7 @@ async function pre() {
     const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
     const ok = _actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit(token);
     const params = {
+        // FIXME: this is wrong, probably normal sha thing
         ref: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref,
         environment: 'production',
         owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,

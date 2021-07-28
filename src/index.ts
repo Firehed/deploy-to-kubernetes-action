@@ -24,6 +24,7 @@ async function run(): Promise<void> {
 }
 
 async function envCheck(): Promise<void> {
+  core.debug(JSON.stringify(process.env))
   await exec.exec('kubectl version')
   await exec.exec('kubectl config get-contexts')
   // Check that kubectl is available
@@ -36,6 +37,7 @@ async function pre(): Promise<number> {
   const ok = github.getOctokit(token)
 
   const params = {
+    // FIXME: this is wrong, probably normal sha thing
     ref: github.context.ref,
     environment: 'production',
     owner: github.context.repo.owner,
