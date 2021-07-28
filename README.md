@@ -1,3 +1,7 @@
+- must run kubectl setup before this action
+- must auth to cluster before this action
+
+
 # Multistage Docker Build Action
 
 This action is designed to perform multistage Docker builds in a straightforward and fast way.
