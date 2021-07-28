@@ -63,7 +63,7 @@ async function createDeployment(): Promise<number> {
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     auto_merge: false,
-    required_contents: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
+    required_contexts: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
   }
   const deploy = await ok.rest.repos.createDeployment(params)
   core.debug(JSON.stringify(deploy))
