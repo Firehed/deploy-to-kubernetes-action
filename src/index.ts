@@ -13,11 +13,12 @@ type DeploymentStatusStates =
 
 async function run(): Promise<void> {
   try {
-    await envCheck()
+    await core.group('Check environment setup', envCheck)
+    // await envCheck()
     // @ts-ignore
-    const deploymentId = await pre()
-    await deploy()
-    await post()
+    const deploymentId = await core.group('Set up Github deployment', pre)
+    await core.group('Deploy', deploy)
+    await core.group('Wrap up', post)
   } catch (error) {
     core.setFailed(error.message)
   }

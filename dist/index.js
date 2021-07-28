@@ -7622,11 +7622,12 @@ __nccwpck_require__.r(__webpack_exports__);
 
 async function run() {
     try {
-        await envCheck();
+        await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Check environment setup', envCheck);
+        // await envCheck()
         // @ts-ignore
-        const deploymentId = await pre();
-        await deploy();
-        await post();
+        const deploymentId = await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Set up Github deployment', pre);
+        await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Deploy', deploy);
+        await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Wrap up', post);
     }
     catch (error) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
