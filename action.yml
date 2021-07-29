@@ -1,0 +1,26 @@
+name: Deploy to Kubernetes
+
+author: Eric Stern
+
+description: Build Docker images to maximize layer caching and minimize build times
+
+inputs:
+  namespace:
+    required: false
+  deployment:
+    required: true
+  container:
+    required: true
+  image:
+    required: true
+  token:
+    required: true
+
+
+branding:
+  color: blue
+  icon: upload
+
+runs:
+  using: node12
+  main: dist/index.js
