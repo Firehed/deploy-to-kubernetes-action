@@ -2,19 +2,27 @@ name: Deploy to Kubernetes
 
 author: Eric Stern
 
-description: Build Docker images to maximize layer caching and minimize build times
+description: Deploy to Kubernetes and track the deployment in Github.
 
 inputs:
   namespace:
+    description: The Kubernetes Namespace that the Deployment is in. If omitted, the `--namespace` flag is not used and the default Kubernetes behavior will apply.
     required: false
   deployment:
+    description: The Deployment to update.
     required: true
   container:
+    description: The name of the Container in the Deployment that will have its image updated.
     required: true
   image:
+    description: The image to deploy.
     required: true
   token:
+    description: The token to use for the Github API. Normally you will use `${{ secrets.GITHUB_TOKEN }}`.
     required: true
+  ref:
+    description: The `ref` to attach to the Github deployment. Defaults to the commit hash of the commit triggering the workflow.
+    required: false
 
 
 branding:
