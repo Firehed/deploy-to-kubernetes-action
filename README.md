@@ -1,8 +1,8 @@
-- must run kubectl setup before this action
-- must auth to cluster before this action
 
 
-# Multistage Docker Build Action
+# Deploy to Kubernetes Action
+
+
 
 This action is designed to perform multistage Docker builds in a straightforward and fast way.
 As it turns out, this is surprisingly difficult to do well in CI, since the host machine performing the build typically starts in a clean slate each time, which means most of the layer caching used by Docker becomes moot.
@@ -17,87 +17,62 @@ While the initial build will, of course, be performed from scratch, subsequent b
 
 | Input | Required | Default | Description |
 |---|---|---|---|
-| `repository` | **yes** | | Repository name for pushed images
-| `stages` | **yes** | | Comma-separarted list of build stages |
-| `server-stage` | **yes** | | Name of stage for server |
-| `testenv-stage` | no | | Name of stage for test environment |
-| `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
-| `quiet` | no | `true` | Should docker commands be passed `--quiet` |
+| `token` | **yes** | | Github Token (to create the Deployment record). Typically provide `${{ secrets.GITHUB_TOKEN }}`. |
+| `namespace` | no | | Namespace of the Kubernetes Deployment |
+| `deployment` | **yes** | | Deployment name |
+| `container` | **yes** | | Container name within the deployment |
+| `image` | **yes** | | Image to set in the container |
 
 ## Outputs
 
 | Output | Description |
 |---|---|
-| `commit` | The full commit hash used for tags |
-| `server-tag` | Commit-specific tag for server |
-| `testenv-tag` | Commit-specific tag for test env (`''` if `testenv-stage` is omitted) |
+| | |
 
 ## Example
 
 The following Actions workflow file will:
 
-- Check out the code
-- Authenticate to the Docker registry
-- Perform the multistage build (pulling previous images as needed)
-- Run the test image
-- Deploy the server if tests pass
+- Install kubectl
+- Authenticate to the clsuter
+- Deploy the image
 
 ```yaml
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
   build-and-test:
     name: Build and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
 
-      # This step MUST be performed before multistage-docker-build
-      - name: Auth to GH registry
-        uses: docker/login-action@v1
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@master
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          export_default_credentials: true
+          project_id: ${{ secrets.GKE_PROJECT }}
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
 
-      - uses: firehed/multistage-docker-build-action@v1
-        id: build
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@main
         with:
-          dockerfile: examples/Dockerfile
-          repository: ghcr.io/firehed/actions
-          stages: env, configured
-          testenv-stage: testenv
-          server-stage: server
+          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
+          location: ${{ secrets.GKE_CLUSTER_LOCATION }}
 
-      # This assumes your testenv actually runs the tests, and
-      # exits 0 if they all pass and nonzero on failure
-      - name: Run tests
-        run: docker run ${{ steps.build.outputs.testenv-tag }}
-        
-      # This can be any command, and you will probably need to
-      # do additional setup first
-      - name: Deploy
-        run: kubectl set image deploy myapp server=${{ steps.build.outputs.server-tag }}
+      - uses: firehed/deploy-to-kubernetes@v1
+        with:
+          namespace: github-actions
+          deployment: www
+          container: server
+          image: my/image:${{ github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 ```
-
-The following images will exist:
-
-- `ghcr.io/firehed/actions/server:{commit-hash}`
-- `ghcr.io/firehed/actions/testenv:{commit-hash}` (if `testenv-stage` is provided)
-- `ghcr.io/firehed/actions/env:{branch-related-name}`
-- `ghcr.io/firehed/actions/configured:{branch-related-name}`
-
-The intended use-case is that the `testenv` will be used for further testing in CI, and the `server` will eventually be deployed.
-You may want remove the intermediate branch images when the branch is closed to save on storage.
 
 ## Known issues/Future features
 
-- Use with Docker Buildkit (via `DOCKER_BUILDKIT=1`) does not consistently use the layer caches.
-  This seems to be a Buildkit issue.
-  It's recommended to leave Buildkit disabled at this time.
-- `latest` tags should be created automatically when on the repository's default branch
-- Make a straightforward mechanism to do cleanup
+- must run kubectl setup before this action
+- must auth to cluster before this action
