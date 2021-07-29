@@ -14,8 +14,6 @@ type DeploymentStatusStates =
 async function run(): Promise<void> {
   try {
     await core.group('Check environment setup', envCheck)
-    // await envCheck()
-    // @ts-ignore
     const deploymentId = await core.group('Set up Github deployment', createDeployment)
     await core.group('Deploy', deploy)
     await core.group('Update status', async () => post(deploymentId))

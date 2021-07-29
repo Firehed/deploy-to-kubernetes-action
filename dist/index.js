@@ -7623,8 +7623,6 @@ __nccwpck_require__.r(__webpack_exports__);
 async function run() {
     try {
         await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Check environment setup', envCheck);
-        // await envCheck()
-        // @ts-ignore
         const deploymentId = await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Set up Github deployment', createDeployment);
         await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Deploy', deploy);
         await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Update status', async () => post(deploymentId));
