@@ -18,7 +18,7 @@ inputs:
     description: The image to deploy.
     required: true
   token:
-    description: "The token to use for the Github API. Normally you will use `${{ secrets.GITHUB_TOKEN }}`."
+    description: The token to use for the Github API. Normally you will use `${{ '${{ secrets.GITHUB_TOKEN }}' }}`.
     required: true
   ref:
     description: The `ref` to attach to the Github deployment. Defaults to the commit hash of the commit triggering the workflow.
