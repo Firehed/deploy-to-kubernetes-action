@@ -57,12 +57,19 @@ async function createDeployment(): Promise<number> {
 
   const environment = core.getInput('environment')
 
+  const production_environment = core.getInput('production')
+  const transient_environment = core.getInput('transient')
+  core.info(production_environment)
+  core.info(transient_environment)
+
   const params = {
     ref,
     environment,
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     auto_merge: false,
+    // production_environment,
+    // transient_environment,
     required_contexts: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
   }
   const deploy = await ok.rest.repos.createDeployment(params)

@@ -7661,12 +7661,18 @@ async function createDeployment() {
         ref = getRef();
     }
     const environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('environment');
+    const production_environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('production');
+    const transient_environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('transient');
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(production_environment);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(transient_environment);
     const params = {
         ref,
         environment,
         owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
         repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
         auto_merge: false,
+        // production_environment,
+        // transient_environment,
         required_contexts: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
     };
     const deploy = await ok.rest.repos.createDeployment(params);
