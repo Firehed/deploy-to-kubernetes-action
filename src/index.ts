@@ -57,10 +57,12 @@ async function createDeployment(): Promise<number> {
 
   const environment = core.getInput('environment')
 
-  const production_environment = core.getInput('production')
-  const transient_environment = core.getInput('transient')
-  core.info(production_environment)
-  core.info(transient_environment)
+  // Pass the production and transient flags only if they're provided by the
+  // action's inputs. If they are, cast the strings to native booleans.
+  const production = core.getInput('production')
+  const production_environment = production === '' ? undefined : production === 'true'
+  const transient = core.getInput('transient')
+  const transient_environment = transient === '' ? undefined : transient === 'true'
 
   const params = {
     ref,
@@ -68,10 +70,11 @@ async function createDeployment(): Promise<number> {
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     auto_merge: false,
-    // production_environment,
-    // transient_environment,
+    production_environment,
+    transient_environment,
     required_contexts: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
   }
+  core.info(JSON.stringify(params))
   const deploy = await ok.rest.repos.createDeployment(params)
   core.debug(JSON.stringify(deploy))
 

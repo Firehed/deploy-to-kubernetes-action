@@ -7661,20 +7661,23 @@ async function createDeployment() {
         ref = getRef();
     }
     const environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('environment');
-    const production_environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('production');
-    const transient_environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('transient');
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(production_environment);
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(transient_environment);
+    // Pass the production and transient flags only if they're provided by the
+    // action's inputs. If they are, cast the strings to native booleans.
+    const production = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('production');
+    const production_environment = production === '' ? undefined : production === 'true';
+    const transient = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('transient');
+    const transient_environment = transient === '' ? undefined : transient === 'true';
     const params = {
         ref,
         environment,
         owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
         repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
         auto_merge: false,
-        // production_environment,
-        // transient_environment,
+        production_environment,
+        transient_environment,
         required_contexts: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
     };
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(JSON.stringify(params));
     const deploy = await ok.rest.repos.createDeployment(params);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(JSON.stringify(deploy));
     // @ts-ignore
