@@ -7633,7 +7633,6 @@ async function run() {
     }
 }
 function getRef() {
-    return _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref;
     const pullRequestEvents = [
         'pull_request',
         'pull_request_review',
