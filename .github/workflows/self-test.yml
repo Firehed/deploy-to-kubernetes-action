@@ -30,4 +30,4 @@ jobs:
           container: nginx
           image: nginx:latest
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: ${{ github.event_name == "push" && "production" || "staging" }}
+          environment: ${{ github.event_name == 'push' && 'production' || 'staging' }}
