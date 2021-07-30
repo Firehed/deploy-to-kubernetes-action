@@ -24,6 +24,7 @@ async function run(): Promise<void> {
 }
 
 function getRef(): string {
+  return github.context.ref
   const pullRequestEvents = [
     'pull_request',
     'pull_request_review',
