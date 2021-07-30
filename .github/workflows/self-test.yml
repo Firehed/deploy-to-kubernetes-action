@@ -10,6 +10,9 @@ jobs:
   self-test:
     name: Self-test
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
+      url: https://example.com/${{ github.ref }}
     steps:
 
       - name: Check out code
@@ -30,6 +33,5 @@ jobs:
           container: nginx
           image: nginx:latest
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
           transient: ${{ github.event_name == 'pull_request' }}
           production: ${{ github.event_name == 'push' }}

@@ -55,7 +55,10 @@ async function createDeployment(): Promise<number> {
     ref = getRef()
   }
 
-  const environment = core.getInput('environment')
+  let environment = core.getInput('environment')
+  if (environment === '') {
+    core.info(JSON.stringify(github.context))
+  }
 
   // Pass the production and transient flags only if they're provided by the
   // action's inputs. If they are, cast the strings to native booleans.
