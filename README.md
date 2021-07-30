@@ -23,7 +23,6 @@ This action will run the `kubectl` commands to deploy an image to Kubernetes, an
 
 The following Actions workflow file will:
 
-- Install kubectl
 - Authenticate to the clsuter
 - Deploy the image
 
@@ -39,19 +38,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          export_default_credentials: true
-          project_id: ${{ secrets.GKE_PROJECT }}
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@main
         with:
           cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
           location: ${{ secrets.GKE_CLUSTER_LOCATION }}
+          credentials: ${{ secrets.GCP_SA_KEY }}
 
       - uses: firehed/deploy-to-kubernetes@v1
         with:
@@ -64,6 +56,5 @@ jobs:
 
 ## Known issues/Future features
 
-- You must run an action that installs `kubectl` before this action
 - You must authenticate to your cluster before this action
 - Specifically if using Google's `get-gke-credentials` action, if you are checking out code during the workflow job, you must do so before running that step (it creates a file, and checking out code after will remove that file)
