@@ -55,9 +55,10 @@ async function createDeployment(): Promise<number> {
     ref = getRef()
   }
 
-  let environment = core.getInput('environment')
+  let environment: string | undefined  = core.getInput('environment')
+  core.info(JSON.stringify(github.context))
   if (environment === '') {
-    core.info(JSON.stringify(github.context))
+    environment = undefined
   }
 
   // Pass the production and transient flags only if they're provided by the

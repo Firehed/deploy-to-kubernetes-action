@@ -7660,7 +7660,11 @@ async function createDeployment() {
     if (ref === '') {
         ref = getRef();
     }
-    const environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('environment');
+    let environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('environment');
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(JSON.stringify(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context));
+    if (environment === '') {
+        environment = undefined;
+    }
     // Pass the production and transient flags only if they're provided by the
     // action's inputs. If they are, cast the strings to native booleans.
     const production = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('production');
