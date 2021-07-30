@@ -12,6 +12,7 @@ This action will run the `kubectl` commands to deploy an image to Kubernetes, an
 | `deployment` | **yes** | | Deployment name |
 | `container` | **yes** | | Container name within the deployment |
 | `image` | **yes** | | Image to set in the container |
+| `environment` | no | `production` | Github environment name |
 
 ## Outputs
 

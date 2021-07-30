@@ -55,9 +55,11 @@ async function createDeployment(): Promise<number> {
     ref = getRef()
   }
 
+  const environment = core.getInput('environment')
+
   const params = {
     ref,
-    environment: 'production',
+    environment,
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     auto_merge: false,

@@ -7660,9 +7660,10 @@ async function createDeployment() {
     if (ref === '') {
         ref = getRef();
     }
+    const environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('environment');
     const params = {
         ref,
-        environment: 'production',
+        environment,
         owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
         repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
         auto_merge: false,

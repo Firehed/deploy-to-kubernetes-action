@@ -23,7 +23,10 @@ inputs:
   ref:
     description: The `ref` to attach to the Github deployment. Defaults to the commit hash of the commit triggering the workflow.
     required: false
-
+  environment:
+    description: Github Deployments environment name
+    required: false
+    default: production
 
 branding:
   color: blue
