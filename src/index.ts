@@ -47,7 +47,6 @@ async function createDeployment(): Promise<number> {
   }
 
   let environment: string | undefined  = core.getInput('environment')
-  core.debug(JSON.stringify(process.env))
   if (environment === '') {
     environment = undefined
   }

@@ -7639,7 +7639,6 @@ async function createDeployment() {
         ref = getRef();
     }
     let environment = core.getInput('environment');
-    core.debug(JSON.stringify(process.env));
     if (environment === '') {
         environment = undefined;
     }
