@@ -78,7 +78,7 @@ async function createDeployment(): Promise<number> {
 
   updateStatus(deploymentId, 'pending')
 
-  core.info("Created deployment ${deploymentId}")
+  core.info(`Created deployment ${deploymentId}`)
 
   return deploymentId
 }

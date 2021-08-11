@@ -7665,7 +7665,7 @@ async function createDeployment() {
     // @ts-ignore
     const deploymentId = deploy.data.id;
     updateStatus(deploymentId, 'pending');
-    core.info("Created deployment ${deploymentId}");
+    core.info(`Created deployment ${deploymentId}`);
     return deploymentId;
 }
 async function deploy() {
