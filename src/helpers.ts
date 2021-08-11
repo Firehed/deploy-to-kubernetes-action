@@ -19,10 +19,6 @@ export function getOctokit() {
   return github.getOctokit(token)
 }
 
-export function getTargetEnvironment(): string | undefined {
-  let environment: string | undefined  = core.getInput('environment')
-  if (environment === '') {
-    environment = undefined
-  }
-  return environment
+export function getTargetEnvironment(): string {
+  return core.getInput('environment')
 }

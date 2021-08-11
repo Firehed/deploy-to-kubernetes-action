@@ -38,3 +38,4 @@ jobs:
           transient: ${{ github.event_name == 'pull_request' }}
           production: ${{ github.event_name == 'push' }}
           url: https://example.com/${{ github.ref }}
+          environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}

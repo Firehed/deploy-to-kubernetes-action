@@ -25,7 +25,7 @@ inputs:
     required: false
   environment:
     description: Github Deployments environment name
-    required: false
+    required: true
   production:
     description: |
       Sets the `production_environment` flag on the deployment.
