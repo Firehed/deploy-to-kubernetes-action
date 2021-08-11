@@ -38,6 +38,9 @@ inputs:
       When true, it indicates the environment will no longer exist at some point in the future.
       See https://docs.github.com/en/rest/reference/repos#create-a-deployment for details.
     required: false
+  url:
+    description: URL of the environment
+    required: false
 
 branding:
   color: blue

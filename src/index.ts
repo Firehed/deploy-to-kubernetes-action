@@ -133,11 +133,19 @@ async function post(deploymentId: number): Promise<void> {
 async function updateStatus(deploymentId: number, state: DeploymentStatusStates) {
   const token = core.getInput('token')
   const ok = github.getOctokit(token)
+
+  let environment_url: string | undefined = core.getInput('url')
+  if (environment_url === '') {
+    environment_url = undefined
+  }
+
   const params = {
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     deployment_id: deploymentId,
     state,
+    auto_inactive: true,
+    environment_url,
   }
   const result = await ok.rest.repos.createDeploymentStatus(params)
   console.debug(JSON.stringify(result))
