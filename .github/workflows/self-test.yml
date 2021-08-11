@@ -6,7 +6,7 @@ on:
       - main
   pull_request:
     # All PRs
-  deployment
+  deployment:
 
 jobs:
   self-test:
