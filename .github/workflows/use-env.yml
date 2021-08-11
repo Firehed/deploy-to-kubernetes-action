@@ -6,7 +6,7 @@ on:
 jobs:
   test:
     name: test
-    runs-on: ubnutu-latest
+    runs-on: ubuntu-latest
     environment:
       name: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
       url: https://example.com/${{ github.ref }}
