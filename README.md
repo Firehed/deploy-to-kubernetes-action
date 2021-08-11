@@ -33,8 +33,8 @@ on:
       - main
 
 jobs:
-  build-and-test:
-    name: Build and test
+  deploy:
+    name: Deploy head of main to prod
     runs-on: ubuntu-latest
     steps:
 
