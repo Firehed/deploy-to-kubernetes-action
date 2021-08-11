@@ -9,6 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
-      url: https://example.com/${{ github.ref }}
+      # url: https://example.com/${{ github.ref }}
     steps:
       - uses: actions/checkout@v2
