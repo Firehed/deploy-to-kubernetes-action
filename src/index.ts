@@ -2,6 +2,10 @@ import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as github from '@actions/github'
 
+import {
+  getRef,
+} from './helpers'
+
 type DeploymentStatusStates =
   | 'error'
   | 'failure'
@@ -21,19 +25,6 @@ async function run(): Promise<void> {
     // update to failed?
     core.setFailed(error.message)
   }
-}
-
-function getRef(): string {
-  const pullRequestEvents = [
-    'pull_request',
-    'pull_request_review',
-    'pull_request_review_comment',
-  ]
-  if (pullRequestEvents.includes(github.context.eventName)) {
-    const prEvent = github.context.payload.pull_request as unknown as any
-    return prEvent.head.sha
-  }
-  return github.context.sha
 }
 
 async function envCheck(): Promise<void> {
@@ -56,7 +47,7 @@ async function createDeployment(): Promise<number> {
   }
 
   let environment: string | undefined  = core.getInput('environment')
-  core.info(JSON.stringify(process.env))
+  core.debug(JSON.stringify(process.env))
   if (environment === '') {
     environment = undefined
   }
@@ -78,7 +69,7 @@ async function createDeployment(): Promise<number> {
     transient_environment,
     required_contexts: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
   }
-  core.info(JSON.stringify(params))
+  core.debug(JSON.stringify(params))
   const deploy = await ok.rest.repos.createDeployment(params)
   core.debug(JSON.stringify(deploy))
 
@@ -86,6 +77,8 @@ async function createDeployment(): Promise<number> {
   const deploymentId: number = deploy.data.id
 
   updateStatus(deploymentId, 'pending')
+
+  core.info("Created deployment ${deploymentId}")
 
   return deploymentId
 }
