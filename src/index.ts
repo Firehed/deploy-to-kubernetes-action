@@ -3,6 +3,8 @@ import * as exec from '@actions/exec'
 import * as github from '@actions/github'
 
 import {
+  getTargetEnvironment,
+  getOctokit,
   getRef,
 } from './helpers'
 
@@ -18,6 +20,8 @@ type DeploymentStatusStates =
 async function run(): Promise<void> {
   try {
     await core.group('Check environment setup', envCheck)
+    const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
+    core.info(`Previous deployment: ${previousDeploymentId}`)
     const deploymentId = await core.group('Set up Github deployment', createDeployment)
     await core.group('Deploy', deploy)
     await core.group('Update status', async () => post(deploymentId))
@@ -37,6 +41,26 @@ async function envCheck(): Promise<void> {
   // try to provide helpful messages if not in a usable state
 }
 
+async function findPreviousDeployment(): Promise<number|null> {
+  const ok = getOctokit()
+  const environment = getTargetEnvironment()
+
+  const params = {
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    environment,
+  }
+  const history = await ok.rest.repos.listDeployments(params)
+
+  if (history.data.length === 0) {
+    return null
+  }
+
+  core.debug(JSON.stringify(history.data))
+
+  return history.data[0].id
+}
+
 async function createDeployment(): Promise<number> {
   const token = core.getInput('token')
   const ok = github.getOctokit(token)
@@ -46,11 +70,7 @@ async function createDeployment(): Promise<number> {
     ref = getRef()
   }
 
-  let environment: string | undefined  = core.getInput('environment')
-  if (environment === '') {
-    environment = undefined
-  }
-
+  const environment = getTargetEnvironment()
   // Pass the production and transient flags only if they're provided by the
   // action's inputs. If they are, cast the strings to native booleans.
   const production = core.getInput('production')

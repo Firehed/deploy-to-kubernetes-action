@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import * as github from '@actions/github'
 
 export function getRef(): string {
@@ -11,4 +12,17 @@ export function getRef(): string {
     return prEvent.head.sha
   }
   return github.context.sha
+}
+
+export function getOctokit() {
+  const token = core.getInput('token')
+  return github.getOctokit(token)
+}
+
+export function getTargetEnvironment(): string | undefined {
+  let environment: string | undefined  = core.getInput('environment')
+  if (environment === '') {
+    environment = undefined
+  }
+  return environment
 }
