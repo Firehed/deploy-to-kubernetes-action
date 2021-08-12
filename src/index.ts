@@ -94,11 +94,10 @@ async function createDeployment(): Promise<number> {
 
   // @ts-ignore
   const deploymentId: number = deploy.data.id
-
-  createDeploymentStatus(deploymentId, 'pending')
-
   core.info(`Created deployment ${deploymentId}`)
 
+  // Immediately set the deployment to pending; it defaults to queued
+  createDeploymentStatus(deploymentId, 'pending')
   return deploymentId
 }
 async function deploy(): Promise<void> {
