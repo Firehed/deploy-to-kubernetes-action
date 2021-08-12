@@ -7561,35 +7561,6 @@ module.exports = require("zlib");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__nccwpck_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__nccwpck_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -7610,69 +7581,97 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
 "use strict";
+// ESM COMPAT FLAG
 __nccwpck_require__.r(__webpack_exports__);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(1514);
-/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_exec__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(2186);
+// EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
+var exec = __nccwpck_require__(1514);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __nccwpck_require__(5438);
+;// CONCATENATED MODULE: ./src/helpers.ts
 
 
-
-async function run() {
-    try {
-        await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Check environment setup', envCheck);
-        const deploymentId = await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Set up Github deployment', createDeployment);
-        await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Deploy', deploy);
-        await _actions_core__WEBPACK_IMPORTED_MODULE_0__.group('Update status', async () => post(deploymentId));
-    }
-    catch (error) {
-        // update to failed?
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
-    }
-}
 function getRef() {
     const pullRequestEvents = [
         'pull_request',
         'pull_request_review',
         'pull_request_review_comment',
     ];
-    if (pullRequestEvents.includes(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.eventName)) {
-        const prEvent = _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.payload.pull_request;
+    if (pullRequestEvents.includes(github.context.eventName)) {
+        const prEvent = github.context.payload.pull_request;
         return prEvent.head.sha;
     }
-    return _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.sha;
+    return github.context.sha;
+}
+function getOctokit() {
+    const token = core.getInput('token');
+    return github.getOctokit(token);
+}
+function getTargetEnvironment() {
+    return core.getInput('environment');
+}
+
+;// CONCATENATED MODULE: ./src/index.ts
+
+
+
+
+async function run() {
+    try {
+        await core.group('Check environment setup', envCheck);
+        // const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
+        // core.info(`Previous deployment: ${previousDeploymentId}`)
+        const deploymentId = await core.group('Set up Github deployment', createDeployment);
+        await core.group('Deploy', deploy);
+        await core.group('Update status', async () => post(deploymentId));
+    }
+    catch (error) {
+        // update to failed?
+        core.setFailed(error.message);
+    }
 }
 async function envCheck() {
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(JSON.stringify(process.env));
+    core.debug(JSON.stringify(process.env));
     // Check that kubectl is available
     // check that KUBECONFIG var is set and path exists
-    await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl version');
-    await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl config get-contexts');
+    await exec.exec('kubectl version');
+    await exec.exec('kubectl config get-contexts');
     // check that it can talk to the cluster?
     // try to provide helpful messages if not in a usable state
 }
 async function createDeployment() {
-    const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
-    const ok = _actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit(token);
-    let ref = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('ref');
+    const ok = getOctokit();
+    let ref = core.getInput('ref');
     if (ref === '') {
         ref = getRef();
     }
+    const environment = getTargetEnvironment();
+    // Pass the production and transient flags only if they're provided by the
+    // action's inputs. If they are, cast the strings to native booleans.
+    const production = core.getInput('production');
+    const production_environment = production === '' ? undefined : production === 'true';
+    const transient = core.getInput('transient');
+    const transient_environment = transient === '' ? undefined : transient === 'true';
     const params = {
         ref,
-        environment: 'production',
-        owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
-        repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
+        environment,
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
         auto_merge: false,
+        production_environment,
+        transient_environment,
         required_contexts: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
     };
+    core.debug(JSON.stringify(params));
     const deploy = await ok.rest.repos.createDeployment(params);
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(JSON.stringify(deploy));
+    core.debug(JSON.stringify(deploy));
     // @ts-ignore
     const deploymentId = deploy.data.id;
-    updateStatus(deploymentId, 'pending');
+    core.info(`Created deployment ${deploymentId}`);
+    // Immediately set the deployment to pending; it defaults to queued
+    createDeploymentStatus(deploymentId, 'pending');
     return deploymentId;
 }
 async function deploy() {
@@ -7681,30 +7680,35 @@ async function deploy() {
         'image',
         'deployment',
     ];
-    const namespace = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('namespace');
+    const namespace = core.getInput('namespace');
     if (namespace !== '') {
         args.push(`--namespace=${namespace}`);
     }
-    const deployment = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('deployment');
+    const deployment = core.getInput('deployment');
     args.push(deployment);
-    const container = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('container');
-    const image = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('image');
+    const container = core.getInput('container');
+    const image = core.getInput('image');
     args.push(`${container}=${image}`);
     args.push('--record=true');
-    await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec('kubectl', args);
+    await exec.exec('kubectl', args);
 }
 async function post(deploymentId) {
     // watch and wait?
-    updateStatus(deploymentId, 'success');
+    createDeploymentStatus(deploymentId, 'success');
 }
-async function updateStatus(deploymentId, state) {
-    const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
-    const ok = _actions_github__WEBPACK_IMPORTED_MODULE_2__.getOctokit(token);
+async function createDeploymentStatus(deploymentId, state) {
+    const ok = getOctokit();
+    let environment_url = core.getInput('url');
+    if (environment_url === '') {
+        environment_url = undefined;
+    }
     const params = {
-        owner: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner,
-        repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo,
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
         deployment_id: deploymentId,
         state,
+        auto_inactive: true,
+        environment_url,
     };
     const result = await ok.rest.repos.createDeploymentStatus(params);
     console.debug(JSON.stringify(result));
