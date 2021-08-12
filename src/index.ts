@@ -131,7 +131,7 @@ async function post(deploymentId: number): Promise<void> {
   createDeploymentStatus(deploymentId, 'success')
 }
 
-async function createDeploymentStatus(deploymentId: number, state: DeploymentStatusStates) {
+async function createDeploymentStatus(deploymentId: number, state: DeploymentStatusStates): Promise<void> {
   const token = core.getInput('token')
   const ok = github.getOctokit(token)
 

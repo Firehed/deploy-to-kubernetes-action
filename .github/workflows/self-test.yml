@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      # This isn't needed to perform a deployment, but is required to do the
+      # local self-test
       - name: Check out code
         uses: actions/checkout@v2
 
