@@ -61,3 +61,5 @@ jobs:
 
 - You must authenticate to your cluster before this action
 - Specifically if using Google's `get-gke-credentials` action, if you are checking out code during the workflow job, you must do so before running that step (it creates a file, and checking out code after will remove that file)
+- Due to some conflicting magic behavior on Github's end, use of this action will produce strange results if used in conjunction with `jobs.<job_id>.environment` configuration.
+  See [#4](https://github.com/Firehed/deploy-to-kubernetes-action/pull/4#issuecomment-897798467)
