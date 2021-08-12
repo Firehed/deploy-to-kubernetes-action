@@ -7585,11 +7585,11 @@ var __webpack_exports__ = {};
 __nccwpck_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(2186);
+var lib_core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __nccwpck_require__(5438);
+var lib_github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/helpers.ts
 
 
@@ -7599,22 +7599,18 @@ function getRef() {
         'pull_request_review',
         'pull_request_review_comment',
     ];
-    if (pullRequestEvents.includes(github.context.eventName)) {
-        const prEvent = github.context.payload.pull_request;
+    if (pullRequestEvents.includes(lib_github.context.eventName)) {
+        const prEvent = lib_github.context.payload.pull_request;
         return prEvent.head.sha;
     }
-    return github.context.sha;
+    return lib_github.context.sha;
 }
-function getOctokit() {
-    const token = core.getInput('token');
-    return github.getOctokit(token);
+function helpers_getOctokit() {
+    const token = lib_core.getInput('token');
+    return lib_github.getOctokit(token);
 }
-function getTargetEnvironment() {
-    let environment = core.getInput('environment');
-    if (environment === '') {
-        environment = undefined;
-    }
-    return environment;
+function helpers_getTargetEnvironment() {
+    return lib_core.getInput('environment');
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
@@ -7624,20 +7620,20 @@ function getTargetEnvironment() {
 
 async function run() {
     try {
-        await core.group('Check environment setup', envCheck);
-        const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment);
-        core.info(`Previous deployment: ${previousDeploymentId}`);
-        const deploymentId = await core.group('Set up Github deployment', createDeployment);
-        await core.group('Deploy', deploy);
-        await core.group('Update status', async () => post(deploymentId));
+        await lib_core.group('Check environment setup', envCheck);
+        // const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
+        // core.info(`Previous deployment: ${previousDeploymentId}`)
+        const deploymentId = await lib_core.group('Set up Github deployment', createDeployment);
+        await lib_core.group('Deploy', deploy);
+        await lib_core.group('Update status', async () => post(deploymentId));
     }
     catch (error) {
         // update to failed?
-        core.setFailed(error.message);
+        lib_core.setFailed(error.message);
     }
 }
 async function envCheck() {
-    core.debug(JSON.stringify(process.env));
+    lib_core.debug(JSON.stringify(process.env));
     // Check that kubectl is available
     // check that KUBECONFIG var is set and path exists
     await exec.exec('kubectl version');
@@ -7645,6 +7641,7 @@ async function envCheck() {
     // check that it can talk to the cluster?
     // try to provide helpful messages if not in a usable state
 }
+// @ts-ignore
 async function findPreviousDeployment() {
     const ok = getOctokit();
     const environment = getTargetEnvironment();
@@ -7661,36 +7658,36 @@ async function findPreviousDeployment() {
     return history.data[0].id;
 }
 async function createDeployment() {
-    const token = core.getInput('token');
-    const ok = github.getOctokit(token);
-    let ref = core.getInput('ref');
+    const ok = helpers_getOctokit();
+    let ref = lib_core.getInput('ref');
     if (ref === '') {
         ref = getRef();
     }
-    const environment = getTargetEnvironment();
+    const environment = helpers_getTargetEnvironment();
     // Pass the production and transient flags only if they're provided by the
     // action's inputs. If they are, cast the strings to native booleans.
-    const production = core.getInput('production');
+    const production = lib_core.getInput('production');
     const production_environment = production === '' ? undefined : production === 'true';
-    const transient = core.getInput('transient');
+    const transient = lib_core.getInput('transient');
     const transient_environment = transient === '' ? undefined : transient === 'true';
     const params = {
         ref,
         environment,
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
+        owner: lib_github.context.repo.owner,
+        repo: lib_github.context.repo.repo,
         auto_merge: false,
         production_environment,
         transient_environment,
         required_contexts: [], // This permits the deployment to be created at all; by default, this action running causes creation to fail because it's still pending. This should be made configurable
     };
-    core.debug(JSON.stringify(params));
+    lib_core.debug(JSON.stringify(params));
     const deploy = await ok.rest.repos.createDeployment(params);
-    core.debug(JSON.stringify(deploy));
+    lib_core.debug(JSON.stringify(deploy));
     // @ts-ignore
     const deploymentId = deploy.data.id;
-    updateStatus(deploymentId, 'pending');
-    core.info(`Created deployment ${deploymentId}`);
+    lib_core.info(`Created deployment ${deploymentId}`);
+    // Immediately set the deployment to pending; it defaults to queued
+    createDeploymentStatus(deploymentId, 'pending');
     return deploymentId;
 }
 async function deploy() {
@@ -7699,32 +7696,31 @@ async function deploy() {
         'image',
         'deployment',
     ];
-    const namespace = core.getInput('namespace');
+    const namespace = lib_core.getInput('namespace');
     if (namespace !== '') {
         args.push(`--namespace=${namespace}`);
     }
-    const deployment = core.getInput('deployment');
+    const deployment = lib_core.getInput('deployment');
     args.push(deployment);
-    const container = core.getInput('container');
-    const image = core.getInput('image');
+    const container = lib_core.getInput('container');
+    const image = lib_core.getInput('image');
     args.push(`${container}=${image}`);
     args.push('--record=true');
     await exec.exec('kubectl', args);
 }
 async function post(deploymentId) {
     // watch and wait?
-    updateStatus(deploymentId, 'success');
+    createDeploymentStatus(deploymentId, 'success');
 }
-async function updateStatus(deploymentId, state) {
-    const token = core.getInput('token');
-    const ok = github.getOctokit(token);
-    let environment_url = core.getInput('url');
+async function createDeploymentStatus(deploymentId, state) {
+    const ok = helpers_getOctokit();
+    let environment_url = lib_core.getInput('url');
     if (environment_url === '') {
         environment_url = undefined;
     }
     const params = {
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
+        owner: lib_github.context.repo.owner,
+        repo: lib_github.context.repo.repo,
         deployment_id: deploymentId,
         state,
         auto_inactive: true,
