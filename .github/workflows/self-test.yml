@@ -12,9 +12,6 @@ jobs:
   self-test:
     name: Self-test
     runs-on: ubuntu-latest
-    environment:
-      name: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
-      url: https://example.com/${{ github.ref }}
     steps:
 
       - name: Check out code
@@ -27,15 +24,15 @@ jobs:
           location: ${{ secrets.GKE_CLUSTER_LOCATION }}
           credentials: ${{ secrets.GCP_SA_KEY }}
 
-      # - name: Run this action
-      #   uses: ./
-      #   with:
-      #     namespace: github-actions
-      #     deployment: www
-      #     container: nginx
-      #     image: nginx:latest
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     transient: ${{ github.event_name == 'pull_request' }}
-      #     production: ${{ github.event_name == 'push' }}
-      #     url: https://example.com/${{ github.ref }}
-      #     environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
+      - name: Run this action
+        uses: ./
+        with:
+          namespace: github-actions
+          deployment: www
+          container: nginx
+          image: nginx:latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          transient: ${{ github.event_name == 'pull_request' }}
+          production: ${{ github.event_name == 'push' }}
+          url: https://example.com/${{ github.ref }}
+          environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
