@@ -2,7 +2,6 @@
 
 This action will run the `kubectl` commands to deploy an image to Kubernetes, and create all of the relevant release tracking information in Github's Deployments.
 
-
 ## Inputs
 
 | Input | Required | Default | Description |
@@ -13,8 +12,9 @@ This action will run the `kubectl` commands to deploy an image to Kubernetes, an
 | `container` | **yes** | | Container name within the deployment |
 | `image` | **yes** | | Image to set in the container |
 | `environment` | **yes** | | Github environment name |
-| `production` | no | | Boolean indicating if this is an environment users will interact with |
-| `transient` | no | | Boolean indicating if this is an environment that may go away in the future |
+| `ref` | no | Current commit hash | `ref` to attach to the deployment |
+| `production` | no | (varies) | Boolean indicating if this is an environment users will interact with |
+| `transient` | no | (varies) | Boolean indicating if this is an environment that may go away in the future |
 | `url` | no | | URL for where the deployment is accessible |
 
 ## Outputs
@@ -27,7 +27,7 @@ This action will run the `kubectl` commands to deploy an image to Kubernetes, an
 
 The following Actions workflow file will:
 
-- Authenticate to the clsuter
+- Authenticate to the cluster
 - Deploy the image
 
 ```yaml
@@ -37,8 +37,8 @@ on:
       - main
 
 jobs:
-  build-and-test:
-    name: Build and test
+  deploy:
+    name: Deploy head of main to prod
     runs-on: ubuntu-latest
     steps:
 
@@ -62,3 +62,5 @@ jobs:
 
 - You must authenticate to your cluster before this action
 - Specifically if using Google's `get-gke-credentials` action, if you are checking out code during the workflow job, you must do so before running that step (it creates a file, and checking out code after will remove that file)
+- Due to some conflicting magic behavior on Github's end, use of this action will produce strange results if used in conjunction with `jobs.<job_id>.environment` configuration.
+  See [#4](https://github.com/Firehed/deploy-to-kubernetes-action/pull/4#issuecomment-897798467)
