@@ -63,8 +63,7 @@ async function findPreviousDeployment(): Promise<number|null> {
 }
 
 async function createDeployment(): Promise<number> {
-  const token = core.getInput('token')
-  const ok = github.getOctokit(token)
+  const ok = getOctokit()
 
   let ref = core.getInput('ref')
   if (ref === '') {
@@ -132,8 +131,7 @@ async function post(deploymentId: number): Promise<void> {
 }
 
 async function createDeploymentStatus(deploymentId: number, state: DeploymentStatusStates): Promise<void> {
-  const token = core.getInput('token')
-  const ok = github.getOctokit(token)
+  const ok = getOctokit()
 
   let environment_url: string | undefined = core.getInput('url')
   if (environment_url === '') {
