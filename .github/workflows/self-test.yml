@@ -12,7 +12,6 @@ jobs:
   self-test:
     name: Self-test
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
     steps:
 
       - name: Check out code
