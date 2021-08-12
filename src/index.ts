@@ -96,7 +96,7 @@ async function createDeployment(): Promise<number> {
   // @ts-ignore
   const deploymentId: number = deploy.data.id
 
-  updateStatus(deploymentId, 'pending')
+  createDeploymentStatus(deploymentId, 'pending')
 
   core.info(`Created deployment ${deploymentId}`)
 
@@ -128,10 +128,10 @@ async function deploy(): Promise<void> {
 
 async function post(deploymentId: number): Promise<void> {
   // watch and wait?
-  updateStatus(deploymentId, 'success')
+  createDeploymentStatus(deploymentId, 'success')
 }
 
-async function updateStatus(deploymentId: number, state: DeploymentStatusStates) {
+async function createDeploymentStatus(deploymentId: number, state: DeploymentStatusStates) {
   const token = core.getInput('token')
   const ok = github.getOctokit(token)
 
