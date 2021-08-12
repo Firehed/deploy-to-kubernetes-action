@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      # This isn't needed to perform a deployment, but is required to do the
+      # local self-test
       - name: Check out code
         uses: actions/checkout@v2
 
@@ -30,3 +32,7 @@ jobs:
           container: nginx
           image: nginx:latest
           token: ${{ secrets.GITHUB_TOKEN }}
+          transient: ${{ github.event_name == 'pull_request' }}
+          production: ${{ github.event_name == 'push' }}
+          url: https://example.com/${{ github.ref }}
+          environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
