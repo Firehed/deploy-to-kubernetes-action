@@ -41,27 +41,6 @@ async function envCheck(): Promise<void> {
   // try to provide helpful messages if not in a usable state
 }
 
-// @ts-ignore
-async function findPreviousDeployment(): Promise<number|null> {
-  const ok = getOctokit()
-  const environment = getTargetEnvironment()
-
-  const params = {
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    environment,
-  }
-  const history = await ok.rest.repos.listDeployments(params)
-
-  if (history.data.length === 0) {
-    return null
-  }
-
-  core.debug(JSON.stringify(history.data))
-
-  return history.data[0].id
-}
-
 async function createDeployment(): Promise<number> {
   const ok = getOctokit()
 
