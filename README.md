@@ -2,7 +2,6 @@
 
 This action will run the `kubectl` commands to deploy an image to Kubernetes, and create all of the relevant release tracking information in Github's Deployments.
 
-
 ## Inputs
 
 | Input | Required | Default | Description |
@@ -27,7 +26,7 @@ This action will run the `kubectl` commands to deploy an image to Kubernetes, an
 
 The following Actions workflow file will:
 
-- Authenticate to the clsuter
+- Authenticate to the cluster
 - Deploy the image
 
 ```yaml
