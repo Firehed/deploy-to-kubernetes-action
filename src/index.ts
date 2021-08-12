@@ -20,8 +20,8 @@ type DeploymentStatusStates =
 async function run(): Promise<void> {
   try {
     await core.group('Check environment setup', envCheck)
-    const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
-    core.info(`Previous deployment: ${previousDeploymentId}`)
+    // const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
+    // core.info(`Previous deployment: ${previousDeploymentId}`)
     const deploymentId = await core.group('Set up Github deployment', createDeployment)
     await core.group('Deploy', deploy)
     await core.group('Update status', async () => post(deploymentId))
@@ -41,6 +41,7 @@ async function envCheck(): Promise<void> {
   // try to provide helpful messages if not in a usable state
 }
 
+// @ts-ignore
 async function findPreviousDeployment(): Promise<number|null> {
   const ok = getOctokit()
   const environment = getTargetEnvironment()
