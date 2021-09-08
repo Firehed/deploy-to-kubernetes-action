@@ -8,7 +8,8 @@ This action will run the `kubectl` commands to deploy an image to Kubernetes, an
 |---|---|---|---|
 | `token` | **yes** | | Github Token (to create the Deployment record). Typically provide `${{ secrets.GITHUB_TOKEN }}`. |
 | `namespace` | no | | Namespace of the Kubernetes Deployment |
-| `deployment` | **yes** | | Deployment name |
+| `deployment` | no, *deprecated* | | Legacy version of `name`; use that input instead. This will be removed in the next major version. |
+| `name` | not yet | | Deployment name (this will be required in the next major version) |
 | `container` | **yes** | | Container name within the deployment |
 | `image` | **yes** | | Image to set in the container |
 | `environment` | **yes** | | Github environment name |
