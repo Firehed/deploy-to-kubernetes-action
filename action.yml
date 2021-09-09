@@ -13,7 +13,7 @@ inputs:
   deployment:
     description: The Deployment to update.
     required: false
-    deprecationMessage: The `deployment` input has been deprecated in favor of `name`
+    deprecationMessage: Use 'name' instead.
   name:
     description: The name of the Deployment to update. (this field replaces `deployment` and will be required in the next major version)
     required: false
