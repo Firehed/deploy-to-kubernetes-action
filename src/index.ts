@@ -91,8 +91,14 @@ async function deploy(): Promise<void> {
     args.push(`--namespace=${namespace}`)
   }
 
-  const deployment = core.getInput('deployment')
-  args.push(deployment)
+  let name = core.getInput('name')
+  if (name === '') {
+    name = core.getInput('deployment')
+  }
+  if (name === '') {
+    core.setFailed('`name` must not be empty.')
+  }
+  args.push(name)
 
   const container = core.getInput('container')
   const image = core.getInput('image')

@@ -12,7 +12,11 @@ inputs:
     required: false
   deployment:
     description: The Deployment to update.
-    required: true
+    required: false
+    deprecationMessage: Use 'name' instead.
+  name:
+    description: The name of the Deployment to update. (this field replaces `deployment` and will be required in the next major version)
+    required: false
   container:
     description: The name of the Container in the Deployment that will have its image updated.
     required: true
