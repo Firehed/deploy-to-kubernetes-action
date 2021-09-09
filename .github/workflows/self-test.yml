@@ -27,7 +27,7 @@ jobs:
         uses: ./
         with:
           namespace: github-actions
-          deployment: www
+          name: www
           container: nginx
           image: nginx:latest
           token: ${{ secrets.GITHUB_TOKEN }}
