@@ -7671,7 +7671,7 @@ async function createDeployment() {
     const deploymentId = deploy.data.id;
     core.info(`Created deployment ${deploymentId}`);
     // Immediately set the deployment to pending; it defaults to queued
-    createDeploymentStatus(deploymentId, 'pending');
+    await createDeploymentStatus(deploymentId, 'pending');
     return deploymentId;
 }
 async function deploy() {
@@ -7702,7 +7702,7 @@ async function deploy() {
 }
 async function post(deploymentId) {
     // watch and wait?
-    createDeploymentStatus(deploymentId, 'success');
+    await createDeploymentStatus(deploymentId, 'success');
 }
 async function createDeploymentStatus(deploymentId, state) {
     const ok = getOctokit();

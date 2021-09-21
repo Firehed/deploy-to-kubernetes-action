@@ -76,9 +76,10 @@ async function createDeployment(): Promise<number> {
   core.info(`Created deployment ${deploymentId}`)
 
   // Immediately set the deployment to pending; it defaults to queued
-  createDeploymentStatus(deploymentId, 'pending')
+  await createDeploymentStatus(deploymentId, 'pending')
   return deploymentId
 }
+
 async function deploy(): Promise<void> {
   // kubectl set image deployment
   const args = [
@@ -113,7 +114,7 @@ async function deploy(): Promise<void> {
 
 async function post(deploymentId: number): Promise<void> {
   // watch and wait?
-  createDeploymentStatus(deploymentId, 'success')
+  await createDeploymentStatus(deploymentId, 'success')
 }
 
 async function createDeploymentStatus(deploymentId: number, state: DeploymentStatusStates): Promise<void> {
