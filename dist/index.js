@@ -7675,15 +7675,18 @@ async function createDeployment() {
     return deploymentId;
 }
 async function deploy() {
+    // kubectl set image deployment
     const args = [
         'set',
         'image',
         'deployment',
     ];
+    // [-n namespace]
     const namespace = core.getInput('namespace');
     if (namespace !== '') {
         args.push(`--namespace=${namespace}`);
     }
+    // name|deployment
     let name = core.getInput('name');
     if (name === '') {
         name = core.getInput('deployment');
@@ -7692,9 +7695,8 @@ async function deploy() {
         core.setFailed('`name` must not be empty.');
     }
     args.push(name);
-    const container = core.getInput('container');
-    const image = core.getInput('image');
-    args.push(`${container}=${image}`);
+    // container1=image1 ... containerN=imageN
+    args.push(getUpdateSpec());
     args.push('--record=true');
     await exec.exec('kubectl', args);
 }
@@ -7718,6 +7720,26 @@ async function createDeploymentStatus(deploymentId, state) {
     };
     const result = await ok.rest.repos.createDeploymentStatus(params);
     console.debug(JSON.stringify(result));
+}
+function getUpdateSpec() {
+    const container = core.getInput('container');
+    const image = core.getInput('image');
+    const spec = core.getInput('spec');
+    // Simple container=image flow
+    if (spec.length === 0) {
+        if (container.length === 0 || image.length === 0) {
+            throw new Error('`container` and `image` are both required if not using `spec`.');
+        }
+        return `${container}=${image}`;
+    }
+    // More complex spec validation flow
+    // First check that simple fields are not set, do now allow anything
+    // ambiguous through.
+    if (container.length > 0 || image.length > 0) {
+        throw new Error('Provide either `spec` OR `container` and `image`, but not both.');
+    }
+    // TODO: validate that spec adheres to a semi-reasonable format
+    return spec;
 }
 run();
 
