@@ -45,7 +45,7 @@ jobs:
           image: i
           spec: c=i
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: test
+          environment: fail-spec-conflict
         id: fail-spec-conflict
         continue-on-error: true
 
@@ -54,7 +54,7 @@ jobs:
         with:
           name: www
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: test
+          environment: fail-spec-missing
         id: fail-spec-missing
         continue-on-error: true
 
