@@ -60,7 +60,7 @@ jobs:
 
       - name: Detect expected failures
         if: |
-          steps.fail-spec-conflict.conclusion != 'failure'
+          steps.fail-spec-conflict.outcome != 'failure'
           ||
-          steps.fail-spec.missing.conclusion != 'failure'
+          steps.fail-spec.missing.outcome != 'failure'
         run: exit 1
