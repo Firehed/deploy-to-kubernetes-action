@@ -35,3 +35,32 @@ jobs:
           production: ${{ github.event_name == 'push' }}
           url: https://example.com/${{ github.ref }}
           environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
+      # TODO: run happy case
+
+      - name: Expected fail: conflicting spec inputs
+        uses: ./
+        with:
+          name: www
+          container: c
+          image: i
+          spec: c=i
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: test
+        id: fail-spec-conflict
+        continue-on-error: true
+
+      - name: Expected fail: missing spec inputs
+        uses: ./
+        with:
+          name: www
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: test
+        id: fail-spec-missing
+        continue-on-error: true
+
+      - name: Detect expected fail
+        if: |
+          steps.fail-spec-conflict.conclusion != 'failure'
+          ||
+          steps.fail-spec.missing.conclusion != 'failure'
+        run: exit 1
