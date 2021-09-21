@@ -140,7 +140,27 @@ async function createDeploymentStatus(deploymentId: number, state: DeploymentSta
 function getUpdateSpec(): string {
   const container = core.getInput('container')
   const image = core.getInput('image')
-  return `${container}=${image}`
+  const spec = core.getInput('spec')
+
+  // Simple container=image flow
+  if (spec.length === 0) {
+    if (container.length === 0 || image.length === 0) {
+      throw new Error('`container` and `image` are both required if not using `spec`.')
+    }
+    return `${container}=${image}`
+  }
+
+  // More complex spec validation flow
+
+  // First check that simple fields are not set, do now allow anything
+  // ambiguous through.
+  if (container.length > 0 || image.length > 0) {
+    throw new Error('Provide either `spec` OR `container` and `image`, but not both.')
+  }
+
+  // TODO: validate that spec adheres to a semi-reasonable format
+
+  return spec
 }
 
 run()
