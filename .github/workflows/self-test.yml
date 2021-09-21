@@ -58,10 +58,22 @@ jobs:
         id: fail-spec-missing
         continue-on-error: true
 
+      - name: Expected failure - malformed spec
+        uses: ./
+        with:
+          name: www
+          token: ${{ secrets.GITHUB_TOKEN }}
+          spec: foo bar --arg
+          environment: fail-spec-invalid
+        id: fail-spec-invalid
+        continue-on-error: true
+
       - name: Detect expected failures
         if: |
           steps.fail-spec-conflict.outcome != 'failure'
           ||
           steps.fail-spec-missing.outcome != 'failure'
+          ||
+          steps.fail-spec-invalid.outcome != 'failure'
         run: |
           exit 1
