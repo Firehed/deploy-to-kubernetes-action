@@ -53,7 +53,7 @@ jobs:
       - uses: firehed/deploy-to-kubernetes@v1
         with:
           namespace: github-actions
-          deployment: www
+          name: www
           container: server
           image: my/image:${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}

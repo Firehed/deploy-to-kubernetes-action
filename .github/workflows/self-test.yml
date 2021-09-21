@@ -35,3 +35,45 @@ jobs:
           production: ${{ github.event_name == 'push' }}
           url: https://example.com/${{ github.ref }}
           environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
+      # TODO: run happy case
+
+      - name: Expected failure - conflicting spec inputs
+        uses: ./
+        with:
+          name: www
+          container: c
+          image: i
+          spec: c=i
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: fail-spec-conflict
+        id: fail-spec-conflict
+        continue-on-error: true
+
+      - name: Expected failure - missing spec inputs
+        uses: ./
+        with:
+          name: www
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: fail-spec-missing
+        id: fail-spec-missing
+        continue-on-error: true
+
+      - name: Expected failure - malformed spec
+        uses: ./
+        with:
+          name: www
+          token: ${{ secrets.GITHUB_TOKEN }}
+          spec: foo bar --arg
+          environment: fail-spec-invalid
+        id: fail-spec-invalid
+        continue-on-error: true
+
+      - name: Detect expected failures
+        if: |
+          steps.fail-spec-conflict.outcome != 'failure'
+          ||
+          steps.fail-spec-missing.outcome != 'failure'
+          ||
+          steps.fail-spec-invalid.outcome != 'failure'
+        run: |
+          exit 1

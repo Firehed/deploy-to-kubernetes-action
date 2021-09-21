@@ -5,49 +5,74 @@ author: Eric Stern
 description: Deploy to Kubernetes and track the deployment in Github.
 
 inputs:
+
+  container:
+    description: The name of the Container in the Deployment that will have its image updated.
+    required: false
+
+  deployment:
+    description: The Deployment to update.
+    required: false
+    deprecationMessage: Use 'name' instead.
+
+  environment:
+    description: Github Deployments environment name.
+    required: true
+
+  image:
+    description: The image to deploy.
+    required: false
+
+  spec:
+    description: |
+      A string containing multiple `CONTAINER_NAME_1=CONTAINER_IMAGE_1 ... CONTAINER_NAME_N=CONTAINER_IMAGE_N` updates.
+      This should be used for updates to multiple containers within a pod, and replaces the `container` and `image` input fields.
+      For updates that change only a single container's image, it's recommended to use those inputs instead of `spec`.
+    required: false
+
+  name:
+    description: The name of the Deployment to update. (this field replaces `deployment` and will be required in the next major version)
+    required: false
+
   namespace:
     description: |
       The Kubernetes Namespace that the Deployment is in.
       If omitted, the `--namespace` flag is not used and the default Kubernetes behavior will apply.
     required: false
-  deployment:
-    description: The Deployment to update.
-    required: false
-    deprecationMessage: Use 'name' instead.
-  name:
-    description: The name of the Deployment to update. (this field replaces `deployment` and will be required in the next major version)
-    required: false
-  container:
-    description: The name of the Container in the Deployment that will have its image updated.
-    required: true
-  image:
-    description: The image to deploy.
-    required: true
-  token:
-    description: |
-      The token to use for the Github API.
-      Normally you will use `secrets.GITHUB_TOKEN`.
-    required: true
-  ref:
-    description: |
-      The `ref` to attach to the Github deployment.
-      Defaults to the commit hash of the commit triggering the workflow.
-    required: false
-  environment:
-    description: Github Deployments environment name.
-    required: true
+
   production:
     description: |
       Sets the `production_environment` flag on the deployment.
       When true, it indicates the environment is used by end-users.
       See https://docs.github.com/en/rest/reference/repos#create-a-deployment for details and defaults.
     required: false
+
+  ref:
+    description: |
+      The `ref` to attach to the Github deployment.
+      Defaults to the commit hash of the commit triggering the workflow.
+    required: false
+
+  resource:
+    description: |
+      The type of resource to update.
+      Valid resources are `deployment`, `cronjob`, `statefulset`, and `daemonset`.
+    required: false
+    default: deployment
+
+  token:
+    description: |
+      The token to use for the Github API.
+      Normally you will use `secrets.GITHUB_TOKEN`.
+    required: true
+
   transient:
     description: |
       Sets the `transient_environment` flag on the deployment.
       When true, it indicates the environment will no longer exist at some point in the future.
       See https://docs.github.com/en/rest/reference/repos#create-a-deployment for details and defaults.
     required: false
+
   url:
     description: URL of the environment.
     required: false

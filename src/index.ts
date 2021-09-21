@@ -76,21 +76,25 @@ async function createDeployment(): Promise<number> {
   core.info(`Created deployment ${deploymentId}`)
 
   // Immediately set the deployment to pending; it defaults to queued
-  createDeploymentStatus(deploymentId, 'pending')
+  await createDeploymentStatus(deploymentId, 'pending')
   return deploymentId
 }
+
 async function deploy(): Promise<void> {
+  // kubectl set image deployment
   const args = [
     'set',
     'image',
     'deployment',
   ]
 
+  // [-n namespace]
   const namespace = core.getInput('namespace')
   if (namespace !== '') {
     args.push(`--namespace=${namespace}`)
   }
 
+  // name|deployment
   let name = core.getInput('name')
   if (name === '') {
     name = core.getInput('deployment')
@@ -100,9 +104,8 @@ async function deploy(): Promise<void> {
   }
   args.push(name)
 
-  const container = core.getInput('container')
-  const image = core.getInput('image')
-  args.push(`${container}=${image}`)
+  // container1=image1 ... containerN=imageN
+  args.push(getUpdateSpec())
 
   args.push('--record=true')
 
@@ -111,7 +114,7 @@ async function deploy(): Promise<void> {
 
 async function post(deploymentId: number): Promise<void> {
   // watch and wait?
-  createDeploymentStatus(deploymentId, 'success')
+  await createDeploymentStatus(deploymentId, 'success')
 }
 
 async function createDeploymentStatus(deploymentId: number, state: DeploymentStatusStates): Promise<void> {
@@ -131,8 +134,34 @@ async function createDeploymentStatus(deploymentId: number, state: DeploymentSta
     environment_url,
   }
   const result = await ok.rest.repos.createDeploymentStatus(params)
-  console.debug(JSON.stringify(result))
+  core.debug(JSON.stringify(result))
+}
 
+
+function getUpdateSpec(): string {
+  const container = core.getInput('container')
+  const image = core.getInput('image')
+  const spec = core.getInput('spec')
+
+  // Simple container=image flow
+  if (spec.length === 0) {
+    if (container.length === 0 || image.length === 0) {
+      throw new Error('`container` and `image` are both required if not using `spec`.')
+    }
+    return `${container}=${image}`
+  }
+
+  // More complex spec validation flow
+
+  // First check that simple fields are not set, do now allow anything
+  // ambiguous through.
+  if (container.length > 0 || image.length > 0) {
+    throw new Error('Provide either `spec` OR `container` and `image`, but not both.')
+  }
+
+  // TODO: validate that spec adheres to a semi-reasonable format
+
+  return spec
 }
 
 run()
