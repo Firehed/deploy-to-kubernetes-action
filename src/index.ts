@@ -80,17 +80,20 @@ async function createDeployment(): Promise<number> {
   return deploymentId
 }
 async function deploy(): Promise<void> {
+  // kubectl set image deployment
   const args = [
     'set',
     'image',
     'deployment',
   ]
 
+  // [-n namespace]
   const namespace = core.getInput('namespace')
   if (namespace !== '') {
     args.push(`--namespace=${namespace}`)
   }
 
+  // name|deployment
   let name = core.getInput('name')
   if (name === '') {
     name = core.getInput('deployment')
@@ -100,9 +103,8 @@ async function deploy(): Promise<void> {
   }
   args.push(name)
 
-  const container = core.getInput('container')
-  const image = core.getInput('image')
-  args.push(`${container}=${image}`)
+  // container1=image1 ... containerN=imageN
+  args.push(getUpdateSpec())
 
   args.push('--record=true')
 
@@ -132,7 +134,13 @@ async function createDeploymentStatus(deploymentId: number, state: DeploymentSta
   }
   const result = await ok.rest.repos.createDeploymentStatus(params)
   console.debug(JSON.stringify(result))
+}
 
+
+function getUpdateSpec(): string {
+  const container = core.getInput('container')
+  const image = core.getInput('image')
+  return `${container}=${image}`
 }
 
 run()
