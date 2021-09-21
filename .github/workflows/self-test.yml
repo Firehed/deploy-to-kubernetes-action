@@ -62,8 +62,6 @@ jobs:
         if: |
           steps.fail-spec-conflict.outcome != 'failure'
           ||
-          steps.fail-spec.missing.outcome != 'failure'
+          steps.fail-spec-missing.outcome != 'failure'
         run: |
-          echo ${{ steps.fail-spec-conflict.outcome }}
-          echo ${{ steps.fail-spec-missing.outcome }}
           exit 1
