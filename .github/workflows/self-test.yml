@@ -24,7 +24,7 @@ jobs:
         run: echo ${{ secrets.LINODE_KUBECONFIG }} | base64 -d > $KUBECONFIG
 
       - name: Check cluster info
-        run: kubectl cluster-info
+        run: kubectl cluster-info dump
 
       - name: Run this action
         uses: ./
