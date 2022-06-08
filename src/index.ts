@@ -125,8 +125,7 @@ async function createDeploymentStatus(deploymentId: number, state: DeploymentSta
     environment_url,
   }
   const result = await ok.rest.repos.createDeploymentStatus(params)
-  console.debug(JSON.stringify(result))
-
+  core.debug(JSON.stringify(result))
 }
 
 run()
