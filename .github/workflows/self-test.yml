@@ -23,6 +23,9 @@ jobs:
       - name: Authenticate to cluster
         run: echo ${{ secrets.LINODE_KUBECONFIG }} | base64 -d > $KUBECONFIG
 
+      - name: Check cluster info
+        run: kubectl cluster-info
+
       - name: Run this action
         uses: ./
         with:
