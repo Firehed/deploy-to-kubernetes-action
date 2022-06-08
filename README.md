@@ -23,6 +23,14 @@ This action will run the `kubectl` commands to deploy an image to Kubernetes, an
 |---|---|
 | | |
 
+## Authentication
+This action uses `kubectl` internally to deploy images; you must already be authenticated to the cluster (and be using the correct context).
+
+Depending on a number of factors (e.g. managed vs self-run, which provder, etc.), this process can be cluster-specific.
+If you are deploying to a managed Kubernetes cluster, it's best to follow any guidance they offer on how to securely authenticate within Github Actions.
+
+However, a bare-minimum guide is included in [AUTHENTICATION.md](AUTHENTICATION.md).
+
 ## Example
 
 The following Actions workflow file will:
