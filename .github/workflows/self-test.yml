@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  KUBECONFIG: ${{ github.workspace }}/__kubeconfig_tmp__
+
 jobs:
   self-test:
     name: Self-test
@@ -13,16 +16,12 @@ jobs:
     steps:
 
       # This isn't needed to perform a deployment, but is required to do the
-      # local self-test
+      # local self-test (for `uses: ./`)
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Get GKE credentials
-        uses: google-github-actions/get-gke-credentials@main
-        with:
-          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
-          location: ${{ secrets.GKE_CLUSTER_LOCATION }}
-          credentials: ${{ secrets.GCP_SA_KEY }}
+      - name: Authenticate to cluster
+        run: echo ${{ secrets.LINODE_KUBECONFIG }} | base64 -d > $KUBECONFIG
 
       - name: Run this action
         uses: ./
