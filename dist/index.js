@@ -7619,17 +7619,21 @@ function getTargetEnvironment() {
 
 
 async function run() {
+    let deploymentId = undefined;
     try {
         await core.group('Check environment setup', envCheck);
         // const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
         // core.info(`Previous deployment: ${previousDeploymentId}`)
-        const deploymentId = await core.group('Set up Github deployment', createDeployment);
-        await core.group('Deploy', deploy);
-        await core.group('Update status', async () => post(deploymentId));
+        deploymentId = await core.group('Set up Github deployment', createDeployment);
+        await core.group('Deploy', async () => deploy(deploymentId));
+        // await core.group('Update status', async () => post(deploymentId!))
     }
     catch (error) {
         // update to failed?
         core.setFailed(error.message);
+        if (deploymentId) {
+            await createDeploymentStatus(deploymentId, 'failure');
+        }
     }
 }
 async function envCheck() {
@@ -7674,7 +7678,7 @@ async function createDeployment() {
     createDeploymentStatus(deploymentId, 'pending');
     return deploymentId;
 }
-async function deploy() {
+async function deploy(deploymentId) {
     const args = [
         'set',
         'image',
@@ -7690,11 +7694,31 @@ async function deploy() {
     const image = core.getInput('image');
     args.push(`${container}=${image}`);
     args.push('--record=true');
-    await exec.exec('kubectl', args);
-}
-async function post(deploymentId) {
-    // watch and wait?
-    createDeploymentStatus(deploymentId, 'success');
+    args.push('--output=json'); // This allows getting the new revision from the response to watch the rollout
+    await createDeploymentStatus(deploymentId, 'in_progress');
+    // Run the actual deployment command
+    const deploymentOutput = await exec.getExecOutput('kubectl', args);
+    core.debug(JSON.stringify(deploymentOutput));
+    if (deploymentOutput.exitCode > 0) {
+        throw new Error('kubectl deployment command failed');
+    }
+    // Parse response; wait for k8s to complete if desired
+    const deploymentStatus = JSON.parse(deploymentOutput.stdout);
+    const revision = deploymentStatus.metadata.annotations['deployment.kubernetes.io/revision'];
+    core.debug(revision);
+    const wait = core.getBooleanInput('wait');
+    const timeout = core.getInput('wait-timeout');
+    if (wait) {
+        await exec.exec('kubectl', [
+            'rollout',
+            'status',
+            `deployment/${deployment}`,
+            `--revision=${revision}`,
+            `--timeout=${timeout}`,
+        ]);
+        // TODO: if nonzero, set to failed
+    }
+    await createDeploymentStatus(deploymentId, 'success');
 }
 async function createDeploymentStatus(deploymentId, state) {
     const ok = getOctokit();
