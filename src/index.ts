@@ -18,16 +18,20 @@ type DeploymentStatusStates =
   | 'success'
 
 async function run(): Promise<void> {
+  let deploymentId: number|undefined = undefined
   try {
     await core.group('Check environment setup', envCheck)
     // const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
     // core.info(`Previous deployment: ${previousDeploymentId}`)
-    const deploymentId = await core.group('Set up Github deployment', createDeployment)
+    deploymentId = await core.group('Set up Github deployment', createDeployment)
     await core.group('Deploy', deploy)
-    await core.group('Update status', async () => post(deploymentId))
+    await core.group('Update status', async () => post(deploymentId!))
   } catch (error) {
     // update to failed?
     core.setFailed(error.message)
+    if (deploymentId) {
+      await createDeploymentStatus(deploymentId, 'failure')
+    }
   }
 }
 
