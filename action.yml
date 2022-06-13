@@ -47,6 +47,21 @@ inputs:
   url:
     description: URL of the environment.
     required: false
+  wait:
+    default: "true"
+    description: |
+      Wait for rollout to complete before finishing.
+      When true, this increases the accuracy of the Deployment statuses displayed on Github, but will result in a longer billable duration (this is basically `kubectl rollout status`).
+      When false, the deployment status will be updated when the _command_ finishes.
+      Defaults to `true`.
+    required: false
+  wait-timeout:
+    default: "5m"
+    description: |
+      Maximum time to wait for a deploy to finish before timing out.
+      A timeout will be set to "error".
+      Accepts any format usable by `kubectl rollout status`, e.g. `1s`, `3m`, `2h`.
+    required: false
 
 branding:
   color: blue
