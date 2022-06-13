@@ -107,7 +107,8 @@ async function deploy(deploymentId: number): Promise<void> {
 
   await createDeploymentStatus(deploymentId, 'in_progress')
   // Run the actual deployment command
-  const deploymentOutput = await exec.getExecOutput('kubectl', args)
+  // TODO: figure out how to control output logging
+  const deploymentOutput = await exec.getExecOutput('kubectl', args, { ignoreReturnCode: true })
   core.debug(JSON.stringify(deploymentOutput))
   if (deploymentOutput.exitCode > 0) {
     throw new Error('kubectl deployment command failed')
