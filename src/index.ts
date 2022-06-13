@@ -24,8 +24,8 @@ async function run(): Promise<void> {
     // const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
     // core.info(`Previous deployment: ${previousDeploymentId}`)
     deploymentId = await core.group('Set up Github deployment', createDeployment)
-    await core.group('Deploy', deploy)
-    await core.group('Update status', async () => post(deploymentId!))
+    await core.group('Deploy', async () => deploy(deploymentId!))
+    // await core.group('Update status', async () => post(deploymentId!))
   } catch (error) {
     // update to failed?
     core.setFailed(error.message)
@@ -83,7 +83,7 @@ async function createDeployment(): Promise<number> {
   createDeploymentStatus(deploymentId, 'pending')
   return deploymentId
 }
-async function deploy(): Promise<void> {
+async function deploy(deploymentId: number): Promise<void> {
   const args = [
     'set',
     'image',
@@ -103,13 +103,37 @@ async function deploy(): Promise<void> {
   args.push(`${container}=${image}`)
 
   args.push('--record=true')
+  args.push('--output=json') // This allows getting the new revision from the response to watch the rollout
 
-  await exec.exec('kubectl', args)
-}
+  await createDeploymentStatus(deploymentId, 'in_progress')
+  // Run the actual deployment command
+  const deploymentOutput = await exec.getExecOutput('kubectl', args)
+  core.debug(JSON.stringify(deploymentOutput))
+  if (deploymentOutput.exitCode > 0) {
+    throw new Error('kubectl deployment command failed')
+  }
 
-async function post(deploymentId: number): Promise<void> {
-  // watch and wait?
-  createDeploymentStatus(deploymentId, 'success')
+
+  // Parse response; wait for k8s to complete if desired
+  const deploymentStatus = JSON.parse(deploymentOutput.stdout)
+  const revision = deploymentStatus.metadata.annotations['deployment.kubernetes.io/revision']
+  core.debug(revision)
+
+  const wait = core.getBooleanInput('wait')
+  const timeout = core.getInput('wait-timeout')
+
+  if (wait) {
+    await exec.exec('kubectl', [
+      'rollout',
+      'status',
+      `deployment/${deployment}`,
+      `--revision=${revision}`,
+      `--timeout=${timeout}`,
+    ])
+    // TODO: if nonzero, set to failed
+  }
+
+  await createDeploymentStatus(deploymentId, 'success')
 }
 
 async function createDeploymentStatus(deploymentId: number, state: DeploymentStatusStates): Promise<void> {
