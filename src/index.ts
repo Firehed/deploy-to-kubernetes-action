@@ -124,13 +124,17 @@ async function deploy(deploymentId: number): Promise<void> {
   const timeout = core.getInput('wait-timeout')
 
   if (wait) {
-    await exec.exec('kubectl', [
+    const rolloutStatusArgs = [
       'rollout',
       'status',
-      `deployment/${deployment}`,
-      `--revision=${revision}`,
-      `--timeout=${timeout}`,
-    ])
+    ]
+    if (namespace !== '') {
+      rolloutStatusArgs.push(`--namespace=${namespace}`)
+    }
+    rolloutStatusArgs.push(`deployment/${deployment}`)
+    rolloutStatusArgs.push(`--revision=${revision}`)
+    rolloutStatusArgs.push(`--timeout=${timeout}`)
+    await exec.exec('kubectl', rolloutStatusArgs)
     // TODO: if nonzero, set to failed
   }
 
