@@ -45,7 +45,7 @@ jobs:
           deployment: www
           image: nginx:latest
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: self-test-failing
+          environment: pr-selftest-nopermissions
 
       - name: Run w/ incorrect deployment
         if: always()
@@ -57,4 +57,32 @@ jobs:
           deployment: fake
           image: nginx:latest
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: self-test-failing
+          environment: pr-selftest-incorrectdeploy
+
+      - name: Run w/out waiting
+        uses: ./
+        with:
+          namespace: github-actions
+          deployment: www
+          container: nginx
+          image: nginx:latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          transient: false
+          production: false
+          url: https://example.com/${{ github.ref }}
+          environment: pr-selftest-no-wait
+          wait: false
+
+      - name: Run w/ very fast timeout
+        uses: ./
+        with:
+          namespace: github-actions
+          deployment: www
+          container: nginx
+          image: nginx:latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          transient: false
+          production: false
+          url: https://example.com/${{ github.ref }}
+          environment: pr-selftest-fast-timeout
+          wait-timeout: 2s
