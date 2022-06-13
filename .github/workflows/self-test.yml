@@ -35,3 +35,25 @@ jobs:
           production: ${{ github.event_name == 'push' }}
           url: https://example.com/${{ github.ref }}
           environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
+
+      - name: Run w/ insufficient permission
+        uses: ./
+        with:
+          # no namespace ~ auth not good
+          container: nginx
+          deployment: www
+          image: nginx:latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: self-test-failing
+
+      - name: Run w/ incorrect deployment
+        if: always()
+        uses: ./
+        with:
+          # no namespace ~ auth not good
+          namespace: github-actions
+          container: nginx
+          deployment: fake
+          image: nginx:latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: self-test-failing
