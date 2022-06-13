@@ -7697,7 +7697,8 @@ async function deploy(deploymentId) {
     args.push('--output=json'); // This allows getting the new revision from the response to watch the rollout
     await createDeploymentStatus(deploymentId, 'in_progress');
     // Run the actual deployment command
-    const deploymentOutput = await exec.getExecOutput('kubectl', args);
+    // TODO: figure out how to control output logging
+    const deploymentOutput = await exec.getExecOutput('kubectl', args, { ignoreReturnCode: true });
     core.debug(JSON.stringify(deploymentOutput));
     if (deploymentOutput.exitCode > 0) {
         throw new Error('kubectl deployment command failed');
@@ -7709,13 +7710,17 @@ async function deploy(deploymentId) {
     const wait = core.getBooleanInput('wait');
     const timeout = core.getInput('wait-timeout');
     if (wait) {
-        await exec.exec('kubectl', [
+        const rolloutStatusArgs = [
             'rollout',
             'status',
-            `deployment/${deployment}`,
-            `--revision=${revision}`,
-            `--timeout=${timeout}`,
-        ]);
+        ];
+        if (namespace !== '') {
+            rolloutStatusArgs.push(`--namespace=${namespace}`);
+        }
+        rolloutStatusArgs.push(`deployment/${deployment}`);
+        rolloutStatusArgs.push(`--revision=${revision}`);
+        rolloutStatusArgs.push(`--timeout=${timeout}`);
+        await exec.exec('kubectl', rolloutStatusArgs);
         // TODO: if nonzero, set to failed
     }
     await createDeploymentStatus(deploymentId, 'success');
