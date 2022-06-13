@@ -37,6 +37,7 @@ jobs:
           environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
 
       - name: Run w/ insufficient permission
+        if: always()
         uses: ./
         with:
           # no namespace ~ auth not good
