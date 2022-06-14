@@ -30,7 +30,7 @@ jobs:
           deployment: www
           container: nginx
           # image: nginx:latest
-          image: ghcr.io/firehed/deploy-to-kubernetes-action/server:${{ github.sha }}
+          image: ghcr.io/firehed/deploy-to-kubernetes-action/server:${{ github.event.pull_request.head.sha || github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
           transient: ${{ github.event_name == 'pull_request' }}
           production: ${{ github.event_name == 'push' }}

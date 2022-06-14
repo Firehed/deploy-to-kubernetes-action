@@ -19,7 +19,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-
       - uses: firehed/multistage-docker-build-action@v1
         with:
           repository: ghcr.io/firehed/deploy-to-kubernetes-action
