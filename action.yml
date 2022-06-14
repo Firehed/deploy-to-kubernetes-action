@@ -59,7 +59,7 @@ inputs:
   wait-timeout:
     default: "5m"
     description: |
-      Maximum time to wait for a deploy to finish before timing out.
+      Maximum time to wait for a rollout to finish before timing out.
       A timeout will be set to "error".
       Accepts any format usable by `kubectl rollout status`, e.g. `1s`, `3m`, `2h`.
     required: false
