@@ -203,8 +203,7 @@ async function trackDeploymentProgress(
   if (result.exitCode === 0) {
     await createDeploymentStatus(deploymentId, 'success')
   } else {
-    await createDeploymentStatus(deploymentId, 'failure')
-    core.setFailed(result.stderr)
+    throw new Error(`Rollout failed after starting: ${result.stderr} [${result.exitCode}]`)
   }
 }
 

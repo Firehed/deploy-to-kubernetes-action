@@ -7802,8 +7802,7 @@ async function trackDeploymentProgress(deploymentId, deployInfo, kubectlStdout) 
         await createDeploymentStatus(deploymentId, 'success');
     }
     else {
-        await createDeploymentStatus(deploymentId, 'failure');
-        core.setFailed(result.stderr);
+        throw new Error(`Rollout failed after starting: ${result.stderr} [${result.exitCode}]`);
     }
 }
 run();
