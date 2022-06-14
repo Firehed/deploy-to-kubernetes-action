@@ -72,7 +72,7 @@ jobs:
           location: ${{ secrets.GKE_CLUSTER_LOCATION }}
           credentials: ${{ secrets.GCP_SA_KEY }}
 
-      - uses: firehed/deploy-to-kubernetes-action@v0.2.0
+      - uses: firehed/deploy-to-kubernetes-action@v0.3.0
         with:
           namespace: github-actions
           deployment: www
