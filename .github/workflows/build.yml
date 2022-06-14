@@ -1,0 +1,26 @@
+name: Build
+
+on:
+  push:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Auth to GH registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - uses: firehed/multistage-docker-build-action@v1
+        with:
+          repository: ghcr.io/firehed/deploy-to-kubernetes-action
+          stages: ''
+          server-stage: server
+          build-args: COMMIT=${{ github.sha }}
+
