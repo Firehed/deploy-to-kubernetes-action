@@ -7719,7 +7719,7 @@ async function deploy(deploymentId, deployInfo) {
     core.debug(JSON.stringify(deploymentOutput));
     if (deploymentOutput.exitCode > 0) {
         // TODO: include stderr in this message.
-        throw new Error('kubectl deployment command failed');
+        throw new Error(`kubectl deployment command failed: ${deploymentOutput.stderr} [${deploymentOutput.exitCode}]`);
     }
     const wait = core.getBooleanInput('wait');
     if (wait) {
