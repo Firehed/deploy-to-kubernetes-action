@@ -7650,7 +7650,6 @@ async function run() {
             image: core.getInput('image'),
         };
         await core.group('Deploy', async () => deploy(deploymentId, deployInfo));
-        // await core.group('Update status', async () => post(deploymentId!))
     }
     catch (error) {
         // update to failed?
@@ -7723,7 +7722,7 @@ async function deploy(deploymentId, deployInfo) {
     }
     const wait = core.getBooleanInput('wait');
     if (wait) {
-        await trackDeploymentProgress(deploymentId, deployInfo, deploymentOutput.stdout);
+        await trackRolloutProgress(deploymentId, deployInfo, deploymentOutput.stdout);
     }
     else {
         // fire-and-forget: assume the command goes through. This reduces the
@@ -7745,8 +7744,11 @@ async function deploy(deploymentId, deployInfo) {
  * `in_progress`, then either `success` or `failed` depending on the outcome.
  * It can be skipped entirely (and should be, if the action is called with
  * `wait: false`).
+ *
+ * Note: rollout history applies to `Deployment`, `DaemonSet`, and
+ * `StatefulSet` resources. It appears unsupported for `CronJob`.
  */
-async function trackDeploymentProgress(deploymentId, deployInfo, kubectlStdout) {
+async function trackRolloutProgress(deploymentId, deployInfo, kubectlStdout) {
     // Immediately track into "in progress"
     await createDeploymentStatus(deploymentId, 'in_progress');
     // There's a bunch of parts around the `kubectl set image` that don't _quite_
