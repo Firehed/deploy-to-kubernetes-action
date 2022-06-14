@@ -54,6 +54,13 @@ rules:
       - list
       - get
       - patch
+  # List replicasets. This is only necessary with `wait: true`
+  - apiGroups:
+      - apps
+    resources:
+      - replicasets
+    verbs:
+      - list
 ```
 
 ## Create a RoleBinding
