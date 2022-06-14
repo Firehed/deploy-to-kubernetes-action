@@ -29,7 +29,6 @@ jobs:
           namespace: github-actions
           deployment: www
           container: nginx
-          # image: nginx:latest
           image: ghcr.io/firehed/deploy-to-kubernetes-action/server:${{ github.event.pull_request.head.sha || github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
           transient: ${{ github.event_name == 'pull_request' }}
@@ -37,14 +36,19 @@ jobs:
           url: https://example.com/${{ github.ref }}
           environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
 
-#       - name: Run w/out waiting
-#         uses: ./
-#         with:
-#           image: nginx:latest
-#           token: ${{ secrets.GITHUB_TOKEN }}
-#           url: https://example.com/${{ github.ref }}
-#           environment: pr-selftest-no-wait
-#           wait: false
+      - name: Run w/out waiting
+        uses: ./
+        with:
+          namespace: github-actions
+          deployment: fast-deploy
+          container: nginx
+          image: ghcr.io/firehed/deploy-to-kubernetes-action/server:${{ github.event.pull_request.head.sha || github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          transient: ${{ github.event_name == 'pull_request' }}
+          production: ${{ github.event_name == 'push' }}
+          url: https://example.com/${{ github.ref }}
+          environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
+          wait: false
 
 #       - name: Run w/ very fast timeout
 #         uses: ./
