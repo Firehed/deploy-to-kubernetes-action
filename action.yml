@@ -6,6 +6,7 @@ description: Deploy to Kubernetes and track the deployment in Github.
 
 inputs:
   namespace:
+    default: default
     description: |
       The Kubernetes Namespace that the Deployment is in.
       If omitted, the `--namespace` flag is not used and the default Kubernetes behavior will apply.
