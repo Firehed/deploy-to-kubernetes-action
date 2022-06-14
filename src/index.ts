@@ -9,7 +9,7 @@ import {
   getRef,
 } from './helpers'
 
-type DeploymentId = number // Github's identifier
+type DeploymentId = number // GitHub's identifier
 
 interface DeployInfo {
   namespace: string
@@ -24,7 +24,7 @@ async function run(): Promise<void> {
     await core.group('Check environment setup', envCheck)
     // const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
     // core.info(`Previous deployment: ${previousDeploymentId}`)
-    deploymentId = await core.group('Set up Github deployment', createDeployment)
+    deploymentId = await core.group('Set up GitHub deployment', createDeployment)
     const deployInfo: DeployInfo = {
       namespace: core.getInput('namespace'),
       deployment: core.getInput('deployment'),
@@ -85,7 +85,7 @@ async function createDeployment(): Promise<DeploymentId> {
 
   // @ts-ignore
   const deploymentId: number = deploy.data.id
-  core.info(`Created deployment ${deploymentId}`)
+  core.info(`Created GitHub deployment ${deploymentId}`)
 
   // Immediately set the deployment to pending; it defaults to queued
   await createDeploymentStatus(deploymentId, 'pending')
@@ -126,7 +126,7 @@ async function deploy(deploymentId: DeploymentId, deployInfo: DeployInfo): Promi
 
 /**
  * This is a wrapper around the `kubectl rollout status` command to watch the
- * deployment and attempt to keep the Kubernetes status in sync with Github.
+ * deployment and attempt to keep the Kubernetes status in sync with GitHub.
  *
  * In an ideal world, this would be managed by some sort of webhook where K8S
  * sends a request to GH, but I'm unaware of a reasonably straightforward way

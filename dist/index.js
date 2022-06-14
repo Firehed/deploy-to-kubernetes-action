@@ -7626,6 +7626,7 @@ async function createDeploymentStatus(deploymentId, state) {
         auto_inactive: true,
         environment_url,
     };
+    core.info(`Updating Github deployment status to ${state}`);
     const result = await ok.rest.repos.createDeploymentStatus(params);
     core.debug(JSON.stringify(result));
 }
@@ -7641,7 +7642,7 @@ async function run() {
         await core.group('Check environment setup', envCheck);
         // const previousDeploymentId = await core.group('Finding previous deployment', findPreviousDeployment)
         // core.info(`Previous deployment: ${previousDeploymentId}`)
-        deploymentId = await core.group('Set up Github deployment', createDeployment);
+        deploymentId = await core.group('Set up GitHub deployment', createDeployment);
         const deployInfo = {
             namespace: core.getInput('namespace'),
             deployment: core.getInput('deployment'),
@@ -7696,7 +7697,7 @@ async function createDeployment() {
     core.debug(JSON.stringify(deploy));
     // @ts-ignore
     const deploymentId = deploy.data.id;
-    core.info(`Created deployment ${deploymentId}`);
+    core.info(`Created GitHub deployment ${deploymentId}`);
     // Immediately set the deployment to pending; it defaults to queued
     await createDeploymentStatus(deploymentId, 'pending');
     return deploymentId;
@@ -7732,7 +7733,7 @@ async function deploy(deploymentId, deployInfo) {
 }
 /**
  * This is a wrapper around the `kubectl rollout status` command to watch the
- * deployment and attempt to keep the Kubernetes status in sync with Github.
+ * deployment and attempt to keep the Kubernetes status in sync with GitHub.
  *
  * In an ideal world, this would be managed by some sort of webhook where K8S
  * sends a request to GH, but I'm unaware of a reasonably straightforward way

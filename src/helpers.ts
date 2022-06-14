@@ -49,6 +49,7 @@ export async function createDeploymentStatus(deploymentId: number, state: Deploy
     auto_inactive: true,
     environment_url,
   }
+  core.info(`Updating Github deployment status to ${state}`)
   const result = await ok.rest.repos.createDeploymentStatus(params)
   core.debug(JSON.stringify(result))
 }
