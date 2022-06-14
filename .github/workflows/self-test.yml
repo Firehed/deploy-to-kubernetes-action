@@ -90,6 +90,8 @@ jobs:
 
       - name: ${{ matrix.name }}
         uses: ./
+        id: test
+        continue-on-error: true
         with:
           namespace: ${{ matrix.namespace || 'github-actions' }}
           container: nginx
@@ -100,3 +102,7 @@ jobs:
           transient: false
           production: false
           wait-timeout: 10s # Just to fail in a reasonable amount of time
+
+      - name: Failing step must fail
+        if: steps.test.outcome != 'failure'
+        run: exit 1
