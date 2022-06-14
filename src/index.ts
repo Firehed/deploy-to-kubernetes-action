@@ -198,12 +198,13 @@ async function trackDeploymentProgress(
   // Runs the command in "watch" mode. This will exit success after some period
   // of time if the deploy finishes, and will exit nonzero if it fails, times
   // out, or has some other problem.
-  const exitCode = await exec.exec('kubectl', rolloutStatusArgs, { ignoreReturnCode: true })
+  const result = await exec.getExecOutput('kubectl', rolloutStatusArgs, { ignoreReturnCode: true })
 
-  if (exitCode === 0) {
+  if (result.exitCode === 0) {
     await createDeploymentStatus(deploymentId, 'success')
   } else {
     await createDeploymentStatus(deploymentId, 'failure')
+    core.setFailed(result.stderr)
   }
 }
 
