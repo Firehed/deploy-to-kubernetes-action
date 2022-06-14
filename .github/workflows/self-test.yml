@@ -29,7 +29,8 @@ jobs:
           namespace: github-actions
           deployment: www
           container: nginx
-          image: nginx:latest
+          # image: nginx:latest
+          image: ghcr.io/firehed/deploy-to-kubernetes-action/server:${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
           transient: ${{ github.event_name == 'pull_request' }}
           production: ${{ github.event_name == 'push' }}
