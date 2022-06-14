@@ -11,7 +11,7 @@ env:
 
 jobs:
   self-test:
-    name: Self-test
+    name: Successes
     runs-on: ubuntu-latest
     steps:
 
@@ -37,53 +37,66 @@ jobs:
           url: https://example.com/${{ github.ref }}
           environment: ${{ github.event_name == 'push' && 'production' || format('dev-{0}', github.ref) }}
 
-      - name: Run w/ insufficient permission
-        if: always()
-        uses: ./
-        with:
-          # no namespace ~ auth not good
-          container: nginx
-          deployment: www
-          image: nginx:latest
-          token: ${{ secrets.GITHUB_TOKEN }}
-          environment: pr-selftest-nopermissions
+#       - name: Run w/out waiting
+#         uses: ./
+#         with:
+#           image: nginx:latest
+#           token: ${{ secrets.GITHUB_TOKEN }}
+#           url: https://example.com/${{ github.ref }}
+#           environment: pr-selftest-no-wait
+#           wait: false
 
-      - name: Run w/ incorrect deployment
-        if: always()
-        uses: ./
-        with:
-          # no namespace ~ auth not good
-          namespace: github-actions
-          container: nginx
-          deployment: fake
-          image: nginx:latest
-          token: ${{ secrets.GITHUB_TOKEN }}
-          environment: pr-selftest-incorrectdeploy
+#       - name: Run w/ very fast timeout
+#         uses: ./
+#         with:
+#           namespace: github-actions
+#           deployment: www
+#           container: nginx
+#           image: nginx:latest
+#           token: ${{ secrets.GITHUB_TOKEN }}
+#           transient: false
+#           production: false
+#           url: https://example.com/${{ github.ref }}
+#           environment: pr-selftest-fast-timeout
+#           wait-timeout: 2s
 
-      - name: Run w/out waiting
+  intentional-failures:
+    name: Failures
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      max-parallel: 1 # Avoid trampling actual cluster resource
+      matrix:
+        include:
+
+          - name: Permissions (namespace)
+            env: pr-selftest-nopermissions
+            namespace: incorrect
+
+          - name: Deploy does not exist
+            env: pr-selftest-nodeploy
+            deployment: fake
+
+          - name: Bad image
+            env: pr-selftest-badimage
+            image: ghcr.io/firehed/deploy-to-kubernetes-action/badname:${{ github.sha }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Authenticate to cluster
+        run: echo ${{ secrets.KUBECONFIG_LKE }} | base64 -d > $KUBECONFIG
+
+      - name: ${{ matrix.name }}
         uses: ./
         with:
-          namespace: github-actions
-          deployment: www
+          namespace: ${{ matrix.namespace || 'github-actions' }}
           container: nginx
-          image: nginx:latest
+          deployment: ${{ matrix.deployment || 'failtest' }}
+          image: ${{ matrix.image || 'nginx:latest' }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          environment: ${{ matrix.env }}
           transient: false
           production: false
-          url: https://example.com/${{ github.ref }}
-          environment: pr-selftest-no-wait
-          wait: false
-
-      - name: Run w/ very fast timeout
-        uses: ./
-        with:
-          namespace: github-actions
-          deployment: www
-          container: nginx
-          image: nginx:latest
-          token: ${{ secrets.GITHUB_TOKEN }}
-          transient: false
-          production: false
-          url: https://example.com/${{ github.ref }}
-          environment: pr-selftest-fast-timeout
-          wait-timeout: 2s
+          wait-timeout: 10s # Just to fail in a reasonable amount of time
