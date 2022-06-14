@@ -7626,7 +7626,7 @@ async function createDeploymentStatus(deploymentId, state) {
         auto_inactive: true,
         environment_url,
     };
-    core.info(`Updating Github deployment status to ${state}`);
+    core.info(`Updating GitHub deployment status to ${state}`);
     const result = await ok.rest.repos.createDeploymentStatus(params);
     core.debug(JSON.stringify(result));
 }
