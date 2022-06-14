@@ -73,7 +73,7 @@ async function createDeployment(): Promise<number> {
   core.info(`Created deployment ${deploymentId}`)
 
   // Immediately set the deployment to pending; it defaults to queued
-  createDeploymentStatus(deploymentId, 'pending')
+  await createDeploymentStatus(deploymentId, 'pending')
   return deploymentId
 }
 async function deploy(deploymentId: number): Promise<void> {
