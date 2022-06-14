@@ -22,3 +22,33 @@ export function getOctokit() {
 export function getTargetEnvironment(): string {
   return core.getInput('environment')
 }
+
+// These are declared roughly in order of state flow
+type DeploymentStatusStates =
+  | 'queued'
+  | 'pending'
+  | 'in_progress'
+  | 'success'
+  | 'error'
+  | 'failure'
+  | 'inactive'
+
+export async function createDeploymentStatus(deploymentId: number, state: DeploymentStatusStates): Promise<void> {
+  const ok = getOctokit()
+
+  let environment_url: string | undefined = core.getInput('url')
+  if (environment_url === '') {
+    environment_url = undefined
+  }
+
+  const params = {
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    deployment_id: deploymentId,
+    state,
+    auto_inactive: true,
+    environment_url,
+  }
+  const result = await ok.rest.repos.createDeploymentStatus(params)
+  core.debug(JSON.stringify(result))
+}

@@ -3,19 +3,12 @@ import * as exec from '@actions/exec'
 import * as github from '@actions/github'
 
 import {
+  createDeploymentStatus,
   getTargetEnvironment,
   getOctokit,
   getRef,
 } from './helpers'
 
-type DeploymentStatusStates =
-  | 'error'
-  | 'failure'
-  | 'inactive'
-  | 'in_progress'
-  | 'queued'
-  | 'pending'
-  | 'success'
 
 async function run(): Promise<void> {
   let deploymentId: number|undefined = undefined
@@ -139,26 +132,6 @@ async function deploy(deploymentId: number): Promise<void> {
   }
 
   await createDeploymentStatus(deploymentId, 'success')
-}
-
-async function createDeploymentStatus(deploymentId: number, state: DeploymentStatusStates): Promise<void> {
-  const ok = getOctokit()
-
-  let environment_url: string | undefined = core.getInput('url')
-  if (environment_url === '') {
-    environment_url = undefined
-  }
-
-  const params = {
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    deployment_id: deploymentId,
-    state,
-    auto_inactive: true,
-    environment_url,
-  }
-  const result = await ok.rest.repos.createDeploymentStatus(params)
-  core.debug(JSON.stringify(result))
 }
 
 run()
