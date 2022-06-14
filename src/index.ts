@@ -9,6 +9,14 @@ import {
   getRef,
 } from './helpers'
 
+type DeploymentId = number // Github's identifier
+
+interface DeployInfo {
+  namespace: string
+  deployment: string
+  container: string
+  image: string
+}
 
 async function run(): Promise<void> {
   let deploymentId: number|undefined = undefined
@@ -38,7 +46,7 @@ async function envCheck(): Promise<void> {
   // try to provide helpful messages if not in a usable state
 }
 
-async function createDeployment(): Promise<number> {
+async function createDeployment(): Promise<DeploymentId> {
   const ok = getOctokit()
 
   let ref = core.getInput('ref')
@@ -76,7 +84,8 @@ async function createDeployment(): Promise<number> {
   await createDeploymentStatus(deploymentId, 'pending')
   return deploymentId
 }
-async function deploy(deploymentId: number): Promise<void> {
+
+async function deploy(deploymentId: DeploymentId): Promise<void> {
   const args = [
     'set',
     'image',
